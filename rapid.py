@@ -206,24 +206,24 @@ class Package:
 	def download_files(self, requested_files, progress = None):
 		""" Download requested_files using the streamer.cgi interface.
 
-			Progress is reported through the progress object, which must be
-			callable (with a single argument to indicate progress _increase_)
-			and have a max attribute.
+		    Progress is reported through the progress object, which must be
+		    callable (with a single argument to indicate progress _increase_)
+		    and have a max attribute.
 
-			streamer.cgi works as follows:
-			* The client does a POST to /streamer.cgi?<hex>
-			  Where hex = the name of the .sdp
-			* The client then sends a gzipped bitarray representing the files
-			  it wishes to download. Bitarray is formated in the obvious way,
-			  an array of characters where each file in the sdp is represented
-			  by the (index mod 8) bit (shifted left) of the (index div 8) byte
-			  of the array.
-            * streamer.cgi then responds with <big endian encoded int32 length>
-              <data of gzipped pool file> for all files requested. Files in the
-              pool are also gzipped, so there is no need to decompress unless
-              you wish to verify integrity.
-            * streamer.cgi also sets the Content-Length header in the reply so
-              you can implement a proper progress bar.
+		    streamer.cgi works as follows:
+		    * The client does a POST to /streamer.cgi?<hex>
+		      Where hex = the name of the .sdp
+		    * The client then sends a gzipped bitarray representing the files
+		      it wishes to download. Bitarray is formated in the obvious way,
+		      an array of characters where each file in the sdp is represented
+		      by the (index mod 8) bit (shifted left) of the (index div 8) byte
+		      of the array.
+		    * streamer.cgi then responds with <big endian encoded int32 length>
+		      <data of gzipped pool file> for all files requested. Files in the
+		      pool are also gzipped, so there is no need to decompress unless
+		      you wish to verify integrity.
+		    * streamer.cgi also sets the Content-Length header in the reply so
+		      you can implement a proper progress bar.
 
 		"""
 		# Determine which files to fetch. (as bitarray and list of files)
