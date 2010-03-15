@@ -62,6 +62,7 @@ class Rapid:
 	""" Repository container."""
 	master_url = 'http://repos.caspring.org/repos.gz'
 	__repositories = None
+	__packages = None
 
 	def __init__(self):
 		mkdir(content_dir)
@@ -84,6 +85,7 @@ class Rapid:
 		path = os.path.join(content_dir, 'repos.gz')
 		self.downloader.conditional_get_request(self.master_url, path)
 		self.__repositories = None
+		self.__packages = None
 		return path
 
 	def get_repositories(self):
@@ -99,7 +101,18 @@ class Rapid:
 
 	def get_packages(self):
 		""" Get combined list of packages published by all repositories."""
-		return reduce(lambda x, y: x + y.get_packages(), self.get_repositories(), [])
+		if self.__packages:
+			return self.__packages
+
+		self.__packages = reduce(lambda x, y: x + y.get_packages(), self.get_repositories(), [])
+
+		# Resolve dependencies.
+		# Dependencies missing in all repositories are silently discarded.
+		by_name = dict(map(lambda x: (x.name, x), self.__packages))
+		for p in self.__packages:
+			p.dependencies = map(lambda x: by_name[x], filter(lambda x: by_name.has_key(x), p.dependencies))
+
+		return self.__packages
 
 
 class Repository:
@@ -127,7 +140,9 @@ class Repository:
 		return path
 
 	def get_packages(self):
-		""" Download and return the list of packages offered."""
+		""" Download and return the list of packages offered. For these
+		    packages dependencies have not been resolved to other Package
+		    objects, because of cross-repository dependencies."""
 		if self.__packages:
 			return self.__packages
 
@@ -138,12 +153,6 @@ class Repository:
 
 		with closing(gzip.open(self.update())) as f:
 			self.__packages = map(read_line, f)
-
-		# Resolve dependencies.
-		# Dependencies missing in the repository are silently discarded.
-		by_name = dict(map(lambda x: (x.name, x), self.__packages))
-		for p in self.__packages:
-			p.dependencies = map(lambda x: by_name[x], filter(lambda x: by_name.has_key(x), p.dependencies))
 
 		return self.__packages
 
