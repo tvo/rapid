@@ -86,7 +86,7 @@ class Downloader:
 
 				atomic_write(filename, remote.read())
 
-		except URLError:
+		except urllib2.URLError:
 			if os.path.exists(filename):
 				return
 			raise
