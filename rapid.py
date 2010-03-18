@@ -273,7 +273,7 @@ class Package:
 				atomic_write(f.get_pool_path(), data)
 
 				if progress:
-					progress(size)
+					progress(4 + size)
 
 	def get_missing_files(self):
 		""" Return a list of files which are not locally available."""
