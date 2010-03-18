@@ -26,3 +26,15 @@ Where *verb* is one of:
     rapid upgrade                  # upgrade all pinned tags
 
 (the other commands are for advanced users mostly)
+
+# Bugs/quirks
+
+ * Uninstall does not check whether other packages depend on the uninstalled package.
+ * Packages disappearing from the server's copy of versions.gz disappear completely from the tool too, even if they are still installed or cached locally. (Also the metadata disappears, so need to cache this locally too to allow e.g. uninstall to check dependencies.)
+
+# Feature suggestions
+
+ * Garbage collect sdp packages (and pool files?) with pinned tags as root set.
+ * Garbage collect pool files with all installed sdp packages as root set.
+ * make-sdd command to easily create a modifiable copy of a package (for engine development)
+ * make-sdz command could then be useful too
