@@ -1,7 +1,7 @@
 # Requirements
 
  * Python (tested on 2.6.2)
- * [python-bitarray](http://pypi.python.org/pypi/bitarray/0.3.2)
+ * [python-bitarray](http://pypi.python.org/pypi/bitarray/0.3.2 -- easy_install bitarray)
 
 # Usage
 
