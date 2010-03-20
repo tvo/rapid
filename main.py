@@ -175,12 +175,6 @@ def upgrade(searchterm):
 		for p in filter(lambda p: tag == p.tag, rapid.get_packages()):
 			install_single(p)
 
-
-if len(sys.argv) < 2:
-	usage()
-
-verb = sys.argv[1]
-
 def req_arg():
 	if len(sys.argv) < 3:
 		print 'Not enough arguments to operation: ' + verb
@@ -193,31 +187,37 @@ def opt_arg():
 		return sys.argv[2]
 	return ''
 
-if verb == 'pin':
-	pin(req_arg())
-elif verb == 'unpin':
-	unpin(req_arg())
-elif verb == 'install':
-	install(req_arg())
-elif verb == 'uninstall':
-	uninstall(req_arg())
-elif verb == 'list-packages':
-	list_packages(opt_arg(), True)
-elif verb == 'list-installed-packages':
-	list_packages(opt_arg(), False)
-elif verb == 'list-tags':
-	list_tags(opt_arg(), True)
-elif verb == 'list-pinned-tags':
-	list_tags(opt_arg(), False)
-elif verb == 'update' or verb == 'upgrade':
-	upgrade(opt_arg())
-else:
-	print 'Unknown operation: ' + verb
-	print
-	usage()
+if __name__ == '__main__':
+	if len(sys.argv) < 2:
+		usage()
+
+	verb = sys.argv[1]
+
+	if verb == 'pin':
+		pin(req_arg())
+	elif verb == 'unpin':
+		unpin(req_arg())
+	elif verb == 'install':
+		install(req_arg())
+	elif verb == 'uninstall':
+		uninstall(req_arg())
+	elif verb == 'list-packages':
+		list_packages(opt_arg(), True)
+	elif verb == 'list-installed-packages':
+		list_packages(opt_arg(), False)
+	elif verb == 'list-tags':
+		list_tags(opt_arg(), True)
+	elif verb == 'list-pinned-tags':
+		list_tags(opt_arg(), False)
+	elif verb == 'update' or verb == 'upgrade':
+		upgrade(opt_arg())
+	else:
+		print 'Unknown operation: ' + verb
+		print
+		usage()
 
 
-# Write configuration.
-config.set('tags', 'pinned', ','.join(pinned_tags))
-with open(config_path, 'wb') as f:
-	config.write(f)
+	# Write configuration.
+	config.set('tags', 'pinned', ','.join(pinned_tags))
+	with open(config_path, 'wb') as f:
+		config.write(f)
