@@ -6,11 +6,14 @@ import rapid,main
 
 class BaseRapidModel(QtGui.QStandardItemModel):
 	def __init__(self,parent):
-		super(BaseRapidModel,self).__init__(0, 2, parent)
-		self.setHeaderData(0, QtCore.Qt.Horizontal, "Name")
-		self.setHeaderData(1, QtCore.Qt.Horizontal, "Tag")
+		super(BaseRapidModel,self).__init__(parent)
 
 	def reloadData(self, dataFunction):
+		self.clear()
+		self.setColumnCount(2)
+		self.setRowCount(0)
+		self.setHeaderData(0, QtCore.Qt.Horizontal, "Name")
+		self.setHeaderData(1, QtCore.Qt.Horizontal, "Tag")
 		i = 0
 		for p in filter( dataFunction, main.rapid.get_packages() ):
 			self.insertRow(i)

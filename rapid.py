@@ -220,8 +220,8 @@ class Package:
 		""" Download requested_files using the streamer.cgi interface.
 
 		    Progress is reported through the progress object, which must be
-		    callable (with a single argument to indicate progress _increase_)
-		    and have a max attribute.
+		    callable (with a single argument to indicate progress _increase_),
+		    a setMaximum (int) setter and int maximum() getter
 
 		    streamer.cgi works as follows:
 		    * The client does a POST to /streamer.cgi?<hex>
@@ -258,7 +258,7 @@ class Package:
 				raise StreamerFormatException('Content-Length')
 
 			if progress:
-				progress.max = int(remote.info()['Content-Length'])
+				progress.setMaximum( int(remote.info()['Content-Length']) )
 				progress(0)
 
 			for f in expected_files:
@@ -293,7 +293,7 @@ class Package:
 			self.download_files(self.get_missing_files(), progress)
 			#FIXME: Windows support
 			os.link(self.get_cache_path(), self.get_installed_path())
-			progress(progress.max)
+			progress(progress.maximum())
 		return True
 
 	def uninstall(self):

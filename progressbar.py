@@ -79,6 +79,11 @@ class ProgressBar:
 		sys.stdout.write("\r")
 		sys.stdout.flush()
 
+	def setMaximum(self, value):
+		self.max = value
+
+	def maximum(self):
+		return self.max
 
 if __name__ == '__main__':
 	from time import sleep
