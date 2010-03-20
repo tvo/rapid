@@ -34,6 +34,10 @@ def mkdir(path):
 	if not os.path.exists(path):
 		os.mkdir(path)
 
+def mkdir_p(path):
+	""" Create directories if they do not exist yet. """
+	if not os.path.exists(path):
+		os.makedirs(path)
 
 class RapidException(Exception):
 	""" Base class for other exceptions defined in this module."""
@@ -270,6 +274,7 @@ class Package:
 					if md5(g.read()).digest() != f.md5:
 						raise StreamerFormatException('md5')
 
+				mkdir_p( os.path.dirname(f.get_pool_path()) )
 				atomic_write(f.get_pool_path(), data)
 
 				if progress:
