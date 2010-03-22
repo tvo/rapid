@@ -13,19 +13,20 @@ class DownloadDialog(QtGui.QProgressDialog):
 		self.connect( self.dt, QtCore.SIGNAL("setMaximum"), self.setMaximum, QtCore.Qt.QueuedConnection )
 		self.connect( self.dt, QtCore.SIGNAL("downloadComplete"), self.close, QtCore.Qt.QueuedConnection )
 		self.dt.start()
-		
+
 	def incrementValue(self,value):
 		self.setValue( self.value() + value )
 
 	def setMaximum(self, value):
 		super(DownloadDialog, self).setMaximum( value )
-		
+
 class DownloadThread(QtCore.QThread):
-	def __init__(self, tag ):
+	def __init__(self, tag_or_name):
 		QtCore.QThread.__init__(self)
-		self.tag = tag
+		self.tag_or_name = tag_or_name
 		self.max = 0
-		
+		print (self.tag_or_name)
+
 	def install_single(self, p, dep = False):
 		""" Install a single package and its dependencies."""
 		for d in p.dependencies:
@@ -46,11 +47,13 @@ class DownloadThread(QtCore.QThread):
 
 	def maximum(self):
 		return self.max
-		
+
 	def run(self):
-		for p in main.select('tag', self.tag, main.rapid.get_packages() ):
-			main.pin_single(p.tag)
-			self.install_single(p)
+		#FIXME: we get multiple tags. Which do we choose?
+		by_tag = main.rapid.get_package_by_tag(self.tag_or_name.split(',')[0])
+		#if by_tag:
+		#	main.pin_single(by_tag)
+		self.install_single(by_tag or main.rapid.get_package_by_name(self.tag_or_name))
 		self.emit( QtCore.SIGNAL("downloadComplete") )
 
 class RapidListWidgetBase(QtGui.QWidget):
@@ -82,7 +85,7 @@ class InstalledRapidListWidget(RapidListWidgetBase):
 
 	def doubleClicked(self,modelIndex):
 		item = self.sourceModel.itemFromIndex( self.proxyModel.mapToSource( modelIndex ) )
-		
+
 class AvailableRapidListWidget(RapidListWidgetBase):
 	def __init__(self,parent):
 		super(AvailableRapidListWidget, self).__init__(parent)

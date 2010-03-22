@@ -13,12 +13,12 @@ class BaseRapidModel(QtGui.QStandardItemModel):
 		self.setColumnCount(2)
 		self.setRowCount(0)
 		self.setHeaderData(0, QtCore.Qt.Horizontal, "Name")
-		self.setHeaderData(1, QtCore.Qt.Horizontal, "Tag")
+		self.setHeaderData(1, QtCore.Qt.Horizontal, "Tags")
 		i = 0
 		for p in filter( dataFunction, main.rapid.get_packages() ):
 			self.insertRow(i)
 			self.setData(self.index(i, 0), p.name)
-			self.setData(self.index(i, 1), p.tag)
+			self.setData(self.index(i, 1), ', '.join(p.tags))
 			i += 1
 
 class AvailableRapidModel(BaseRapidModel):
