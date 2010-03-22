@@ -104,6 +104,8 @@ class Downloader:
 
 ################################################################################
 
+from StringIO import StringIO
+
 class MockDownloader:
 	def __init__(self):
 		self.www = {}
@@ -122,8 +124,11 @@ class MockDownloader:
 		self.visited.add(url)
 
 	def post(self, url, data):
-		#TODO: implement MockDownloader.post
-		raise Exception('unsupported operation')
+		def info():
+			return {'Content-Length': len(self.www[url])}
+		remote = StringIO(self.www[url])
+		remote.info = info
+		return remote
 
 ################################################################################
 
