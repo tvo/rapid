@@ -34,6 +34,10 @@ def mkdir(path):
 	if not os.path.exists(path):
 		os.mkdir(path)
 
+def mkdir_p(path):
+	""" Create directories if they do not exist yet. """
+	if not os.path.exists(path):
+		os.makedirs(path)
 
 class RapidException(Exception):
 	""" Base class for other exceptions defined in this module."""
@@ -206,8 +210,8 @@ class Package:
 		""" Download requested_files using the streamer.cgi interface.
 
 		    Progress is reported through the progress object, which must be
-		    callable (with a single argument to indicate progress _increase_)
-		    and have a max attribute.
+		    callable (with a single argument to indicate progress _increase_),
+		    a setMaximum (int) setter and int maximum() getter
 
 		    streamer.cgi works as follows:
 		    * The client does a POST to /streamer.cgi?<hex>
@@ -244,7 +248,7 @@ class Package:
 				raise StreamerFormatException('Content-Length')
 
 			if progress:
-				progress.max = int(remote.info()['Content-Length'])
+				progress.setMaximum( int(remote.info()['Content-Length']) )
 				progress(0)
 
 			for f in expected_files:
@@ -260,6 +264,7 @@ class Package:
 					if md5(g.read()).digest() != f.md5:
 						raise StreamerFormatException('md5')
 
+				mkdir_p( os.path.dirname(f.get_pool_path()) )
 				atomic_write(f.get_pool_path(), data)
 
 				if progress:
@@ -278,7 +283,7 @@ class Package:
 			self.download_files(self.get_missing_files(), progress)
 			#FIXME: Windows support
 			os.link(self.cache_file, self.get_installed_path())
-			progress(progress.max)
+			progress(progress.maximum())
 		return True
 
 	def uninstall(self):
