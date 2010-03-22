@@ -7,9 +7,11 @@ import ConfigParser
 import os
 import urllib2
 
+################################################################################
 
-timeout = 5
+timeout = 5     # change timeout here if desired
 
+################################################################################
 
 def atomic_write(filename, data):
 	temp = filename + '.tmp'
@@ -27,9 +29,11 @@ class NotModifiedHandler(urllib2.BaseHandler):
 		addinfourl.code = code
 		return addinfourl
 
+################################################################################
 
 class Downloader:
 	__config = ConfigParser.RawConfigParser()
+	_304 = False    # for unit tests
 
 	def __init__(self, config_filename):
 		#print ('reading configuration from ' + config_filename)
@@ -82,6 +86,7 @@ class Downloader:
 
 				if hasattr(remote, 'code') and remote.code == 304:
 					#print 'the file has not been modified'
+					self._304 = True
 					return
 
 				atomic_write(filename, remote.read())
@@ -97,8 +102,37 @@ class Downloader:
 
 		return urllib2.urlopen(request)
 
+################################################################################
+
+import unittest
+
+class TestDownloader(unittest.TestCase):
+	test_dir = '.test'
+	url = 'http://repos.caspring.org/repos.gz'
+	test_file = os.path.join(test_dir, 'repos.gz')
+	config_file = os.path.join(test_dir, 'test.cfg')
+
+	def setUp(self):
+		os.mkdir(self.test_dir)
+		self.downloader = Downloader(self.config_file)
+
+	def tearDown(self):
+		if os.path.exists(self.test_file):   os.unlink(self.test_file)
+		if os.path.exists(self.config_file): os.unlink(self.config_file)
+		if os.path.exists(self.test_dir):    os.rmdir(self.test_dir)
+
+	def test_onetime_get_request(self):
+		self.downloader.onetime_get_request(self.url, self.test_file)
+
+	def test_http_304_not_modified(self):
+		self.downloader.conditional_get_request(self.url, self.test_file)
+		self.assertFalse(self.downloader._304)
+		self.downloader.conditional_get_request(self.url, self.test_file)
+		self.assertTrue(self.downloader._304)
+
+	def test_post(self):
+		#TODO
+		pass
 
 if __name__ == '__main__':
-	d = Downloader()
-	d.conditional_get_request('http://repos.caspring.org/repos.gz', 'content/repos.gz')
-	d.conditional_get_request('http://www.google.com/', 'content/google.htm')
+	unittest.main()
