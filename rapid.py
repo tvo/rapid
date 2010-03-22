@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2010 Tobi Vollebregt
 
-from binascii import hexlify
 from bitarray import bitarray
 from contextlib import closing
 from hashlib import md5
 from urlparse import urlparse
 from StringIO import StringIO
-import gzip, os, struct
+import binascii, gzip, os, struct
 
 from downloader import Downloader, atomic_write
 
@@ -407,7 +406,7 @@ class File:
 
 	def get_pool_path(self):
 		""" Return the physical path to the file in the pool."""
-		md5 = hexlify(self.md5)
+		md5 = binascii.hexlify(self.md5)
 		return os.path.join(pool_dir, md5[:2], md5[2:]) + '.gz'
 
 	def available(self):
@@ -436,7 +435,8 @@ class TestRapid(unittest.TestCase):
 			www = self.rapid.downloader.www
 			www[master_url] = gzip_string(',http://ts1,,\n')
 			www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,,XTA 9.6\n')
-			www['http://ts1/packages/1234.sdp'] = gzip_string('') #TODO
+			www['http://ts1/packages/1234.sdp'] = gzip_string('\3foo' + binascii.unhexlify('d41d8cd98f00b204e9800998ecf8427e') + 8 * '\0')
+			www['http://ts1/streamer.cgi?1234'] = struct.pack('>L', len(gzip_string(''))) + gzip_string('')
 
 	def tearDown(self):
 		shutil.rmtree(self.test_dir)
@@ -470,6 +470,8 @@ class TestRapid(unittest.TestCase):
 	def test_install_uninstall(self):
 		p = self.rapid.get_package_by_tag('xta:latest')
 		p.install()
+		self.assertFalse(p.get_missing_files())
+		self.assertTrue(os.path.exists(p.get_files()[0].get_pool_path()))
 		self.assertTrue(os.path.exists(os.path.join(package_dir, '1234.sdp')))
 		p.uninstall()
 		self.assertFalse(os.path.exists(os.path.join(package_dir, '1234.sdp')))
