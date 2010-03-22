@@ -129,6 +129,9 @@ def install(searchterm):
 def uninstall_single(p):
 	""" Uninstall and unpin a single package. Does not uninstall dependencies."""
 	if p:
+		if not p.can_be_uninstalled():
+			print 'Can not uninstall because of dependencies: ' + p.name
+			return
 		for t in p.tags:
 			unpin_single(t)
 		print 'Uninstalling: ' + p.name

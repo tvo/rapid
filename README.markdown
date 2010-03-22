@@ -30,7 +30,7 @@ Where *verb* is one of:
 
 # Bugs/quirks
 
- * Uninstall does not check whether other packages depend on the uninstalled package.
+ * No known bugs/quirks
 
 # Feature suggestions
 
