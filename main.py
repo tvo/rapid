@@ -46,15 +46,12 @@ if config.has_option('tags', 'pinned'):
 rapid = rapid.Rapid()
 
 
-def select(noun, searchterm, packages):
-	""" Search for packages with searchterm in tag or name. Ask user for more
-	    information depending on the number of results and return the selected
-	    packages or exit if user canceled."""
-	s = searchterm.lower()
-	selected = filter(lambda p: s in p.tag.lower() or s in p.name.lower(), packages)
+def select(noun, needle, haystack):
+	n = needle.lower()
+	selected = filter(lambda s: n in str(s).lower(), haystack)
 
 	if len(selected) == 0:
-		print 'No %ss matching %s found.' % (noun, searchterm)
+		print 'No %ss matching %s found.' % (noun, needle)
 		sys.exit(1)
 
 	if len(selected) >= 100:
@@ -64,8 +61,7 @@ def select(noun, searchterm, packages):
 	if len(selected) > 1:
 		print 'Multiple %ss found:' % noun
 		for i in range(len(selected)):
-			p = selected[i]
-			print '%2i.  %-30s (%s)' % (i + 1, p.tag, p.name)
+			print '%2i.  %s' % (i + 1, selected[i])
 		which = raw_input("Which %s do you mean? (enter number or 'all')   " % noun)
 		if which == 'all':
 			return selected
