@@ -39,7 +39,7 @@ pinned_tags = []
 if not config.has_section('tags'):
 	config.add_section('tags')
 if config.has_option('tags', 'pinned'):
-	pinned_tags = filter(lambda x: len(x)>0, config.get('tags', 'pinned').split(','))
+	pinned_tags = set([s for s in config.get('tags', 'pinned').split(',') if s])
 
 
 #  Create rapid module.
@@ -79,16 +79,16 @@ def pin_single(tag):
 	    installed and upgraded."""
 	if not tag in pinned_tags:
 		print 'Pinning: ' + tag
-		pinned_tags.append(tag)
+		pinned_tags.add(tag)
 	else:
 		print 'Already pinned: ' + tag
 
 
 def pin(searchterm):
 	""" Pin all tags matching searchterm and install the corresponding packages."""
-	for p in select('tag', searchterm, rapid.get_packages()):
-		pin_single(p.tag)
-		install_single(p)
+	for t in select('tag', searchterm, rapid.get_tags().iterkeys()):
+		pin_single(t)
+		install_single(rapid.get_package_by_tag(t))
 
 
 def unpin_single(tag):
@@ -103,73 +103,78 @@ def unpin_single(tag):
 
 def unpin(searchterm):
 	""" Unpin all tags matching searchterm."""
-	for p in select('pinned tag', searchterm, filter(lambda p: p.tag in pinned_tags, rapid.get_packages())):
-		unpin_single(p.tag)
+	for t in select('pinned tag', searchterm, pinned_tags):
+		unpin_single(t)
 
 
 def install_single(p, dep = False):
 	""" Install a single package and its dependencies."""
-	for d in p.dependencies:
-		install_single(d, True)
-	if not p.installed():
-		print ['Installing: ', 'Installing dependency: '][int(dep)] + p.name
-		p.install(ProgressBar())
-		print
-	elif not dep:
-		print 'Already installed: ' + p.name
+	if p:
+		for d in p.dependencies:
+			install_single(d, True)
+		if not p.installed():
+			print ['Installing: ', 'Installing dependency: '][int(dep)] + p.name
+			p.install(ProgressBar())
+			print
+		elif not dep:
+			print 'Already installed: ' + p.name
 
 
 def install(searchterm):
 	""" Install all packages matching searchterm."""
-	for p in select('package', searchterm, rapid.get_packages()):
-		install_single(p)
+	for name in select('name', searchterm, rapid.get_names().iterkeys()):
+		install_single(rapid.get_package_by_name(name))
 
 
 def uninstall_single(p):
 	""" Uninstall and unpin a single package. Does not uninstall dependencies."""
-	unpin_single(p.tag)
-	print 'Uninstalling: ' + p.name
-	p.uninstall()
+	if p:
+		for t in p.tags:
+			unpin_single(t)
+		print 'Uninstalling: ' + p.name
+		p.uninstall()
 
 
 def uninstall(searchterm):
 	""" Uninstall all packages matching searchterm."""
-	for p in select('package', searchterm, filter(lambda p: p.installed(), rapid.get_packages())):
-		uninstall_single(p)
+	for name in select('name', searchterm, [p.name for p in rapid.get_installed_packages()]):
+		uninstall_single(rapid.get_package_by_name(name))
 
 
 def list_packages(searchterm, available):
 	""" List all packages whose name matches searchterm."""
-	selected = filter(lambda p: searchterm in p.name, rapid.get_packages())
+	s = searchterm.lower()
 	print 'Installed packages:'
-	for p in filter(lambda p: p.installed(), selected):
-		print '  %-40s (%s)' % (p.name, ', '.join(filter(lambda t: t == p.tag, pinned_tags)))
+	for p in filter(lambda p: s in p.name.lower(), rapid.get_installed_packages()):
+		print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 	if available:
 		print 'Available packages:'
-		for p in filter(lambda p: not p.installed(), selected):
-			print '  %-40s (%s)' % (p.name, p.tag)
+		for p in rapid.get_not_installed_packages():
+			print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 
 
 def list_tags(searchterm, available):
 	""" List all tags which match searchterm."""
+	s = searchterm.lower()
 	print 'Pinned tags:'
-	for tag in filter(lambda t: searchterm.lower() in t.lower(), pinned_tags):
-		packages = filter(lambda p: tag == p.tag, rapid.get_packages())
-		for p in packages:
-			print '  %-40s (%s)' % (p.tag, p.name)
-		if len(packages) == 0:
+	for tag in filter(lambda t: s in t.lower(), pinned_tags):
+		p = rapid.get_package_by_tag(tag)
+		if p:
+			print '  %-40s (%s)' % (tag, p.name)
+		else:
 			print '  %-40s [dangling tag]' % tag
 	if available:
 		print 'Available tags:'
-		for p in filter(lambda p: searchterm.lower() in p.tag.lower() and not p.tag in pinned_tags, rapid.get_packages()):
-			print '  %-40s (%s)' % (p.tag, p.name)
+		for tag in (set(rapid.get_tags()) - pinned_tags):
+			p = rapid.get_package_by_tag(tag)
+			print '  %-40s (%s)' % (tag, p.name)
 
 
 def upgrade(searchterm):
 	""" Upgrade installed tags which match searchterm."""
 	for tag in filter(lambda t: searchterm.lower() in t.lower(), pinned_tags):
-		for p in filter(lambda p: tag == p.tag, rapid.get_packages()):
-			install_single(p)
+		install_single(rapid.get_package_by_tag(tag))
+
 
 def req_arg():
 	if len(sys.argv) < 3:
