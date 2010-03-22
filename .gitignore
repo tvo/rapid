@@ -1,0 +1,5 @@
+.coverage
+*.pyc
+
+# generated from README.markdown
+README.html
