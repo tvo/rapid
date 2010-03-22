@@ -105,9 +105,10 @@ class Downloader:
 ################################################################################
 
 class MockDownloader:
-	www = {}
-	visited = set()
-	_304 = False
+	def __init__(self):
+		self.www = {}
+		self.visited = set()
+		self._304 = False
 
 	def onetime_get_request(self, url, filename):
 		atomic_write(filename, self.www[url])
