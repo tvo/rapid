@@ -79,6 +79,7 @@ class Rapid:
 	def __init__(self):
 		self.master_url = 'http://repos.caspring.org/repos.gz'
 		self.cache_dir = content_dir
+		self.repos_gz = os.path.join(content_dir, 'repos.gz')
 		self.packages_gz = os.path.join(self.cache_dir, 'packages.gz')
 
 		mkdir(content_dir)
@@ -93,19 +94,16 @@ class Rapid:
 		self.downloader = Downloader(os.path.join(content_dir, 'downloader.cfg'))
 
 	def update(self):
-		""" Force an update of the master list of repositories."""
-		path = os.path.join(content_dir, 'repos.gz')
-		self.downloader.conditional_get_request(self.master_url, path)
-		self.__repositories = None
-		self.__packages = None
-		return path
+		""" Update of the master list of repositories."""
+		self.downloader.conditional_get_request(self.master_url, self.repos_gz)
 
 	def get_repositories(self):
 		""" Download and return list of repositories."""
 		if self.__repositories:
 			return self.__repositories
 
-		with closing(gzip.open(self.update())) as f:
+		self.update()
+		with closing(gzip.open(self.repos_gz)) as f:
 			unique = set([x.split(',')[1] for x in f])
 			self.__repositories = [Repository(self, x) for x in unique]
 
@@ -142,13 +140,11 @@ class Rapid:
 				os.remove(self.packages_gz)
 			os.rename(tempfile, self.packages_gz)
 
-	def get_packages(self):
-		""" Get combined list of packages published by all repositories."""
+	def get_packages_by_name(self):
+		""" Return package with given name or None if there isn't any."""
 		if self.__packages:
 			return self.__packages
 
-		# First call to get_repositories() clobbers __packages and __repositories!
-		self.get_repositories()
 		self.__packages = self.read_packages_gz()
 
 		# FIXME: this is broken if a package is in repo1 with tag1 and in repo2 with tag2
@@ -181,9 +177,8 @@ class Repository:
 		mkdir(self.package_cache_dir)
 
 	def update(self):
-		""" Force an update of the list of packages of this repository."""
+		""" Update of the list of packages of this repository."""
 		self.rapid.downloader.conditional_get_request(self.url + '/versions.gz', self.versions_gz)
-		self.__packages = None
 
 	def read_versions_gz(self):
 		""" Reads versions.gz-formatted file into a dictionary of Packages."""
@@ -236,7 +231,6 @@ class Package:
 	def download(self):
 		""" Download the package from the repository."""
 		self.repository.rapid.downloader.onetime_get_request(self.repository.url + '/packages/' + self.hex + '.sdp', self.cache_file)
-		return self.cache_file
 
 	def get_files(self):
 		""" Download .sdp file and return the list of files in it."""
@@ -244,10 +238,8 @@ class Package:
 			return self.__files
 		self.__files = []
 
-		#d = self.repository.rapid.downloader
-		#d.onetime_get_request('packages/' + self.hex + '.sdp'
-
-		with closing(gzip.open(self.download())) as f:
+		self.download()
+		with closing(gzip.open(self.cache_file)) as f:
 			def really_read(n, field):
 				data = f.read(n)
 				if len(data) < n:
