@@ -382,7 +382,8 @@ class Package:
 			self.download_files(self.get_missing_files(), progress)
 			#FIXME: Windows support
 			os.link(self.cache_file, self.get_installed_path())
-			progress(progress.maximum())
+			if progress:
+				progress(progress.maximum())
 		return True
 
 	def uninstall(self):
@@ -465,6 +466,13 @@ class TestRapid(unittest.TestCase):
 
 	def test_get_not_installed_packages(self):
 		self.rapid.get_not_installed_packages()
+
+	def test_install_uninstall(self):
+		p = self.rapid.get_package_by_tag('xta:latest')
+		p.install()
+		self.assertTrue(os.path.exists(os.path.join(package_dir, '1234.sdp')))
+		p.uninstall()
+		self.assertFalse(os.path.exists(os.path.join(package_dir, '1234.sdp')))
 
 if __name__ == '__main__':
 	unittest.main()
