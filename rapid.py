@@ -92,8 +92,8 @@ class Rapid:
 		self.repos_gz = os.path.join(self.cache_dir, 'repos.gz')
 		self.packages_gz = os.path.join(self.cache_dir, 'packages.gz')
 
-		mkdir(content_dir)
 		mkdir(spring_dir)
+		mkdir(content_dir)
 		mkdir(package_dir)
 
 		if not os.path.exists(pool_dir):
