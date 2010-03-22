@@ -75,6 +75,7 @@ class Rapid:
 	""" Repository container."""
 	__repositories = None
 	__packages = None
+	__packages_by_tag = None
 
 	def __init__(self):
 		self.master_url = 'http://repos.caspring.org/repos.gz'
@@ -159,6 +160,43 @@ class Rapid:
 			p.dependencies = [self.__packages[name] for name in p.dependencies if name in self.__packages]
 
 		return self.__packages
+
+	def get_package_by_name(self, name):
+		""" Return package with given name or None if there isn't any."""
+		if name in self.get_packages_by_name():
+			return self.__packages[name]
+
+		return None
+
+	def get_packages_by_tag(self):
+		""" Return a dictionary mapping tag to Package."""
+		if self.__packages_by_tag:
+			return self.__packages_by_tag
+
+		self.__packages_by_tag = {}
+		for p in self.get_packages_by_name().itervalues():
+			self.__packages_by_tag.update(dict([(t, p) for t in p.tags]))
+
+		return self.__packages_by_tag
+
+	def get_package_by_tag(self, tag):
+		""" Return package with given tag or None if there isn't any."""
+		if tag in self.get_packages_by_tag():
+			return self.__packages_by_tag[tag]
+
+		return None
+
+	def get_packages(self):
+		""" Return something that can iterate over all packages."""
+		return self.get_packages_by_name().itervalues()
+
+	def get_installed_packages(self):
+		""" Return something that can iterate over all installed packages."""
+		return filter(lambda p: p.installed(), self.get_packages())
+
+	def get_not_installed_packages(self):
+		""" Return something that can iterate over all not-installed packages."""
+		return filter(lambda p: not p.installed(), self.get_packages())
 
 ################################################################################
 
