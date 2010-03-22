@@ -164,10 +164,12 @@ class Rapid:
 
 		self.write_packages_gz()
 
-		# Resolve dependencies.
+		# Resolve dependencies and calculate reverse dependencies.
 		# Dependencies missing in all repositories are silently discarded.
 		for p in self.__packages.itervalues():
-			p.dependencies = [self.__packages[name] for name in p.dependencies if name in self.__packages]
+			p.dependencies = set([self.__packages[name] for name in p.dependencies if name in self.__packages])
+			for d in p.dependencies:
+				d.reverse_dependencies.add(p)
 
 		return self.__packages
 
@@ -265,6 +267,7 @@ class Package:
 		self.hex = hex
 		self.name = name
 		self.dependencies = dependencies
+		self.reverse_dependencies = set()
 		self.tags = set(tags or [])
 		self.repository = repository
 		if repository:
@@ -372,22 +375,34 @@ class Package:
 		""" Return a list of files which are not locally available."""
 		return filter(lambda f: not f.available(), self.get_files())
 
-	def install(self, progress = None):
-		""" Install the package by hardlinking it into Spring dir."""
+	def can_be_installed(self):
+		""" Return true iff all dependencies are installed."""
 		if not self.installed():
 			for dep in self.dependencies:
 				if not dep.installed():
 					return False
+		return True
+
+	def install(self, progress = None):
+		""" Install the package by hardlinking it into Spring dir."""
+		if not self.installed() and self.can_be_installed():
 			self.download_files(self.get_missing_files(), progress)
 			#FIXME: Windows support
 			os.link(self.cache_file, self.get_installed_path())
 			if progress:
 				progress(progress.maximum())
+
+	def can_be_uninstalled(self):
+		""" Return true iff no reverse dependencies are installed."""
+		if self.installed():
+			for rdep in self.reverse_dependencies:
+				if rdep.installed():
+					return False
 		return True
 
 	def uninstall(self):
 		""" Uninstall the package by unlinking it from Spring dir."""
-		if self.installed():
+		if self.installed() and self.can_be_uninstalled():
 			os.unlink(self.get_installed_path())
 
 	def installed(self):
@@ -434,8 +449,9 @@ class TestRapid(unittest.TestCase):
 			self.rapid.downloader = MockDownloader()
 			www = self.rapid.downloader.www
 			www[master_url] = gzip_string(',http://ts1,,\n')
-			www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,,XTA 9.6\n')
+			www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,dependency,XTA 9.6\n,5678,,dependency\n')
 			www['http://ts1/packages/1234.sdp'] = gzip_string('\3foo' + binascii.unhexlify('d41d8cd98f00b204e9800998ecf8427e') + 8 * '\0')
+			www['http://ts1/packages/5678.sdp'] = gzip_string('')
 			www['http://ts1/streamer.cgi?1234'] = struct.pack('>L', len(gzip_string(''))) + gzip_string('')
 
 	def tearDown(self):
@@ -467,14 +483,31 @@ class TestRapid(unittest.TestCase):
 	def test_get_not_installed_packages(self):
 		self.rapid.get_not_installed_packages()
 
+	def install(self, p):
+		for d in p.dependencies:
+			self.install(d)
+		p.install()
+
 	def test_install_uninstall(self):
 		p = self.rapid.get_package_by_tag('xta:latest')
-		p.install()
+		self.install(p)
 		self.assertFalse(p.get_missing_files())
 		self.assertTrue(os.path.exists(p.get_files()[0].get_pool_path()))
 		self.assertTrue(os.path.exists(os.path.join(package_dir, '1234.sdp')))
 		p.uninstall()
 		self.assertFalse(os.path.exists(os.path.join(package_dir, '1234.sdp')))
+
+	def test_install_missing_dependency(self):
+		p = self.rapid.get_package_by_tag('xta:latest')
+		p.install()
+		self.assertFalse(p.installed())   # install should have failed
+
+	def test_uninstall_dependency_check(self):
+		p = self.rapid.get_package_by_tag('xta:latest')
+		self.install(p)
+		d = self.rapid.get_package_by_name('dependency')
+		d.uninstall()
+		self.assertTrue(d.installed())   # uninstall should have failed
 
 if __name__ == '__main__':
 	unittest.main()
