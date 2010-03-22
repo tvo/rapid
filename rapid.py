@@ -21,12 +21,15 @@ from downloader import Downloader, atomic_write
 
 master_url = 'http://repos.caspring.org/repos.gz'
 
-if os.name == 'posix':
-	home = os.environ['HOME']
-	spring_dir = os.path.join(home, '.spring')
+def set_spring_dir(path):
+	global spring_dir, pool_dir, package_dir, content_dir
+	spring_dir = path
 	pool_dir = os.path.join(spring_dir, 'pool')
 	package_dir = os.path.join(spring_dir, 'packages')
 	content_dir = os.path.join(spring_dir, 'rapid')
+
+if os.name == 'posix':
+	set_spring_dir(os.path.join(os.environ['HOME'], '.spring'))
 #FIXME: elif os.name =='nt':
 else:
 	raise NotImplementedError('Unknown OS: %s' % os.name)
@@ -415,17 +418,30 @@ class File:
 
 ################################################################################
 
-import unittest
+import unittest, shutil, time
 from downloader import MockDownloader
 
 class TestRapid(unittest.TestCase):
+	test_dir = os.path.realpath('.test-rapid')
+
 	def setUp(self):
+		set_spring_dir(self.test_dir)
+
+		# Speed up the test because if pool is present the 256 pool
+		# directories are created on demand instead of beforehand.
+		mkdir_p(pool_dir)
+
 		self.rapid = Rapid()
-		self.rapid.downloader = MockDownloader()
-		www = self.rapid.downloader.www
-		www[master_url] = gzip_string(',http://ts1,,\n')
-		www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,,XTA 9.6\n')
-		www['http://ts1/packages/1234.sdp'] = gzip_string('') #TODO
+
+		if True:   # False to use real Downloader, True to use MockDownloader
+			self.rapid.downloader = MockDownloader()
+			www = self.rapid.downloader.www
+			www[master_url] = gzip_string(',http://ts1,,\n')
+			www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,,XTA 9.6\n')
+			www['http://ts1/packages/1234.sdp'] = gzip_string('') #TODO
+
+	def tearDown(self):
+		shutil.rmtree(self.test_dir)
 
 	def test_get_repositories(self):
 		self.rapid.get_repositories()
