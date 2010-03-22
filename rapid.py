@@ -61,6 +61,7 @@ class StreamerFormatException(RapidException):
 class Rapid:
 	""" Repository container."""
 	master_url = 'http://repos.caspring.org/repos.gz'
+	cache_dir = content_dir
 	__repositories = None
 	__packages = None
 
@@ -75,10 +76,6 @@ class Rapid:
 				os.mkdir(os.path.join(pool_dir, '%02x' % i))
 
 		self.downloader = Downloader(os.path.join(content_dir, 'downloader.cfg'))
-
-	def get_cache_path(self):
-		""" Return global cache path."""
-		return content_dir
 
 	def update(self):
 		""" Force an update of the master list of repositories."""
@@ -122,19 +119,16 @@ class Repository:
 	def __init__(self, rapid, url):
 		self.rapid = rapid
 		self.url = url
-		self.host = urlparse(url).netloc
+		self.cache_dir = os.path.join(self.rapid.cache_dir, urlparse(url).netloc)
+		self.package_cache_dir = os.path.join(self.cache_dir, 'packages')
 
 		# Create cache directories
-		mkdir(os.path.join(content_dir, self.host))
-		mkdir(os.path.join(content_dir, self.host, 'packages'))
-
-	def get_cache_path(self):
-		""" Return the path at which repository data may be cached."""
-		return os.path.join(self.rapid.get_cache_path(), self.host)
+		mkdir(self.cache_dir)
+		mkdir(self.package_cache_dir)
 
 	def update(self):
 		""" Force an update of the list of packages of this repository."""
-		path = os.path.join(self.get_cache_path(), 'versions.gz')
+		path = os.path.join(self.cache_dir, 'versions.gz')
 		self.rapid.downloader.conditional_get_request(self.url + '/versions.gz', path)
 		self.__packages = None
 		return path
@@ -166,10 +160,7 @@ class Package:
 		self.hex = hex
 		self.dependencies = dependencies
 		self.name = name
-
-	def get_cache_path(self):
-		""" Return the path at which the package may be cached."""
-		return os.path.join(self.repository.get_cache_path(), 'packages', self.hex + '.sdp')
+		self.cache_file = os.path.join(repository.cache_dir, 'packages', self.hex + '.sdp')
 
 	def get_installed_path(self):
 		""" Return the path at which the package would be visible to Spring."""
@@ -177,9 +168,8 @@ class Package:
 
 	def download(self):
 		""" Download the package from the repository."""
-		path = self.get_cache_path()
-		self.repository.rapid.downloader.onetime_get_request(self.repository.url + '/packages/' + self.hex + '.sdp', path)
-		return path
+		self.repository.rapid.downloader.onetime_get_request(self.repository.url + '/packages/' + self.hex + '.sdp', self.cache_file)
+		return self.cache_file
 
 	def get_files(self):
 		""" Download .sdp file and return the list of files in it."""
@@ -287,7 +277,7 @@ class Package:
 					return False
 			self.download_files(self.get_missing_files(), progress)
 			#FIXME: Windows support
-			os.link(self.get_cache_path(), self.get_installed_path())
+			os.link(self.cache_file, self.get_installed_path())
 			progress(progress.max)
 		return True
 
