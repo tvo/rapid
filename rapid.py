@@ -85,11 +85,10 @@ class StreamerFormatException(RapidException):
 
 class Rapid:
 	""" Repository container."""
-	__repositories = None
-	__packages = None
-	__packages_by_tag = None
-
 	def __init__(self):
+		self.__repositories = None
+		self.__packages = None
+		self.__packages_by_tag = None
 		self.master_url = master_url
 		self.cache_dir = content_dir
 		self.repos_gz = os.path.join(self.cache_dir, 'repos.gz')
@@ -214,9 +213,8 @@ class Rapid:
 
 class Repository:
 	""" A rapid package repository."""
-	__packages = None
-
 	def __init__(self, rapid, url):
+		self.__packages = None
 		self.rapid = rapid
 		self.url = url
 		self.cache_dir = os.path.join(self.rapid.cache_dir, urlparse(url).netloc)
@@ -263,9 +261,8 @@ class Repository:
 ################################################################################
 
 class Package:
-	__files = None
-
 	def __init__(self, hex, name, dependencies, tags = None, repository = None):
+		self.__files = None
 		self.hex = hex
 		self.name = name
 		self.dependencies = dependencies
