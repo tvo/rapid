@@ -2,7 +2,7 @@
 
  * Python (tested on 2.6.2)
  * [python-bitarray](http://pypi.python.org/pypi/bitarray/0.3.2) (easy_install bitarray)
-  
+
 
 # Usage
 
@@ -31,7 +31,6 @@ Where *verb* is one of:
 # Bugs/quirks
 
  * Uninstall does not check whether other packages depend on the uninstalled package.
- * Packages disappearing from the server's copy of versions.gz disappear completely from the tool too, even if they are still installed or cached locally. (Also the metadata disappears, so need to cache this locally too to allow e.g. uninstall to check dependencies.)
 
 # Feature suggestions
 
