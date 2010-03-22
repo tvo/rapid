@@ -86,7 +86,7 @@ def pin_single(tag):
 
 def pin(searchterm):
 	""" Pin all tags matching searchterm and install the corresponding packages."""
-	for t in select('tag', searchterm, rapid.get_tags().iterkeys()):
+	for t in select('tag', searchterm, rapid.get_packages_by_tag().iterkeys()):
 		pin_single(t)
 		install_single(rapid.get_package_by_tag(t))
 
@@ -165,7 +165,7 @@ def list_tags(searchterm, available):
 			print '  %-40s [dangling tag]' % tag
 	if available:
 		print 'Available tags:'
-		for tag in (set(rapid.get_tags()) - pinned_tags):
+		for tag in (set(rapid.get_packages_by_tag()) - pinned_tags):
 			p = rapid.get_package_by_tag(tag)
 			print '  %-40s (%s)' % (tag, p.name)
 
