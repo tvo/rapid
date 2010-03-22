@@ -45,6 +45,13 @@ def psv(s):
 	""" Split pipe separated value string into list of non-empty components."""
 	return [x for x in s.split('|') if x]
 
+def gzip_string(s):
+	""" Gzip the string s."""
+	fileobj = StringIO()
+	with closing(gzip.GzipFile(mode = 'wb', fileobj = fileobj)) as f:
+		f.write(s)
+	return fileobj.getvalue()
+
 ################################################################################
 
 class RapidException(Exception):
@@ -330,10 +337,7 @@ class Package:
 			return
 
 		# Build HTTP POST data.
-		postdata = StringIO()
-		with closing(gzip.GzipFile(mode = 'wb', fileobj = postdata)) as f:
-			f.write(bits.tostring()) #bits.tofile(f) doesn't work here
-		postdata = postdata.getvalue()
+		postdata = gzip_string(bits.tostring())
 
 		# Perform HTTP POST request and download and process the response.
 		with closing(self.repository.rapid.downloader.post(self.repository.url + '/streamer.cgi?' + self.hex, postdata)) as remote:
