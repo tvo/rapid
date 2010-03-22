@@ -80,7 +80,7 @@ class Rapid:
 	def __init__(self):
 		self.master_url = 'http://repos.caspring.org/repos.gz'
 		self.cache_dir = content_dir
-		self.repos_gz = os.path.join(content_dir, 'repos.gz')
+		self.repos_gz = os.path.join(self.cache_dir, 'repos.gz')
 		self.packages_gz = os.path.join(self.cache_dir, 'packages.gz')
 
 		mkdir(content_dir)
@@ -406,3 +406,40 @@ class File:
 	def available(self):
 		""" Return true iff the file is available locally."""
 		return os.path.exists(self.get_pool_path())
+
+################################################################################
+
+import unittest
+
+class TestRapid(unittest.TestCase):
+	def setUp(self):
+		self.rapid = Rapid()
+
+	def test_get_repositories(self):
+		self.rapid.get_repositories()
+
+	def test_get_packages_by_name(self):
+		self.rapid.get_packages_by_name()
+
+	def test_get_package_by_name(self):
+		self.assertFalse(self.rapid.get_package_by_name('XXXXXX'))
+		self.assertTrue(self.rapid.get_package_by_name('XTA 9.6'))
+
+	def test_get_packages_by_tag(self):
+		self.rapid.get_packages_by_tag()
+
+	def test_get_package_by_tag(self):
+		self.assertFalse(self.rapid.get_package_by_tag('XXXXXX'))
+		self.assertTrue(self.rapid.get_package_by_tag('xta:latest'))
+
+	def test_get_packages(self):
+		self.rapid.get_packages()
+
+	def test_get_installed_packages(self):
+		self.rapid.get_installed_packages()
+
+	def test_get_not_installed_packages(self):
+		self.rapid.get_not_installed_packages()
+
+if __name__ == '__main__':
+	unittest.main()
