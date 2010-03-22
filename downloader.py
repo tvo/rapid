@@ -127,10 +127,10 @@ class MockDownloader:
 
 ################################################################################
 
-import unittest
+import unittest, shutil
 
 class TestDownloader(unittest.TestCase):
-	test_dir = '.test'
+	test_dir = '.test-downloader'
 	url = 'http://repos.caspring.org/repos.gz'
 	test_file = os.path.join(test_dir, 'repos.gz')
 	config_file = os.path.join(test_dir, 'test.cfg')
@@ -144,9 +144,7 @@ class TestDownloader(unittest.TestCase):
 			self.downloader.www[self.url] = ''
 
 	def tearDown(self):
-		if os.path.exists(self.test_file):   os.unlink(self.test_file)
-		if os.path.exists(self.config_file): os.unlink(self.config_file)
-		if os.path.exists(self.test_dir):    os.rmdir(self.test_dir)
+		shutil.rmtree(self.test_dir)
 
 	def test_onetime_get_request(self):
 		self.downloader.onetime_get_request(self.url, self.test_file)
