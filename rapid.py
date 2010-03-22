@@ -416,10 +416,16 @@ class File:
 ################################################################################
 
 import unittest
+from downloader import MockDownloader
 
 class TestRapid(unittest.TestCase):
 	def setUp(self):
 		self.rapid = Rapid()
+		self.rapid.downloader = MockDownloader()
+		www = self.rapid.downloader.www
+		www[master_url] = gzip_string(',http://ts1,,\n')
+		www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,,XTA 9.6\n')
+		www['http://ts1/packages/1234.sdp'] = gzip_string('') #TODO
 
 	def test_get_repositories(self):
 		self.rapid.get_repositories()
