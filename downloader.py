@@ -104,6 +104,28 @@ class Downloader:
 
 ################################################################################
 
+class MockDownloader:
+	www = {}
+	visited = set()
+	_304 = False
+
+	def onetime_get_request(self, url, filename):
+		atomic_write(filename, self.www[url])
+
+	def conditional_get_request(self, url, filename):
+		if url in self.visited:
+			self._304 = True
+			return
+
+		atomic_write(filename, self.www[url])
+		self.visited.add(url)
+
+	def post(self, url, data):
+		#TODO: implement MockDownloader.post
+		raise Exception('unsupported operation')
+
+################################################################################
+
 import unittest
 
 class TestDownloader(unittest.TestCase):
@@ -114,7 +136,11 @@ class TestDownloader(unittest.TestCase):
 
 	def setUp(self):
 		os.mkdir(self.test_dir)
-		self.downloader = Downloader(self.config_file)
+		if False:   # change to test (Mock)Downloader
+			self.downloader = Downloader(self.config_file)
+		else:
+			self.downloader = MockDownloader()
+			self.downloader.www[self.url] = ''
 
 	def tearDown(self):
 		if os.path.exists(self.test_file):   os.unlink(self.test_file)
@@ -131,7 +157,7 @@ class TestDownloader(unittest.TestCase):
 		self.assertTrue(self.downloader._304)
 
 	def test_post(self):
-		#TODO
+		#TODO: implement test_post
 		pass
 
 if __name__ == '__main__':
