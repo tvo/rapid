@@ -19,6 +19,8 @@ from downloader import Downloader, atomic_write
 # pool_dir    : Where pool files are stored (visible to Spring)
 # package_dir : Where package files are stored (visible to Spring)
 
+master_url = 'http://repos.caspring.org/repos.gz'
+
 if os.name == 'posix':
 	home = os.environ['HOME']
 	spring_dir = os.path.join(home, '.spring')
@@ -85,7 +87,7 @@ class Rapid:
 	__packages_by_tag = None
 
 	def __init__(self):
-		self.master_url = 'http://repos.caspring.org/repos.gz'
+		self.master_url = master_url
 		self.cache_dir = content_dir
 		self.repos_gz = os.path.join(self.cache_dir, 'repos.gz')
 		self.packages_gz = os.path.join(self.cache_dir, 'packages.gz')
