@@ -1,5 +1,7 @@
 .coverage
 *.pyc
+*~
+*.swp
 
 # generated from README.markdown
 README.html
