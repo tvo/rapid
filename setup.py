@@ -7,7 +7,7 @@ setup(
     author='Tobi Vollebregt',
     author_email='',
     packages=['rapid-spring'],
-    scripts=['bin/stowe-towels.py','bin/wash-towels.py'],
+    scripts=['bin/rapid','bin/rapid-gui'],
     url='http://pypi.python.org/pypi/rapid-spring/',
     license='LICENSE.txt',
     description='spring contentt downloading',
