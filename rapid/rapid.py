@@ -576,6 +576,45 @@ class File:
 import unittest, shutil, time
 from downloader import MockDownloader
 
+
+class TestPinnedTags(unittest.TestCase):
+	test_dir = os.path.realpath('.test-rapid')
+
+	def setUp(self):
+		set_spring_dir(self.test_dir)
+		mkdir_p(content_dir)
+		self.pt = PinnedTags()
+
+	def tearDown(self):
+		shutil.rmtree(self.test_dir)
+
+	def test_add(self):
+		self.pt.add('foo')
+		self.assertTrue('foo' in PinnedTags())
+
+	def test_add_duplicate(self):
+		self.pt.add('foo')
+		self.pt.add('foo')
+		self.assertEqual(['foo'], list(PinnedTags()))
+
+	def test_clear(self):
+		self.pt.add('foo')
+		self.pt.clear()
+		self.assertEqual([], list(PinnedTags()))
+
+	def test_remove(self):
+		self.pt.add('foo')
+		self.pt.remove('foo')
+		self.assertFalse('foo' in PinnedTags())
+
+	def test_remove_nonexisting(self):
+		self.assertRaises(KeyError, lambda: self.pt.remove('foo'))
+
+	def test_update(self):
+		self.pt.update(['foo'])
+		self.assertTrue('foo' in PinnedTags())
+
+
 class TestRapid(unittest.TestCase):
 	test_dir = os.path.realpath('.test-rapid')
 
