@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os, sys
 from PyQt4 import QtCore, QtGui
-from rapid import models
+
+try:
+	from rapid import models
+except ImportError:
+	# for development (make sure to not have rapid installed system wide!)
+	sys.path.append(os.path.normpath(os.path.join(os.path.realpath(__file__), '..', '..')))
+	from rapid import models
+
 
 class DownloadDialog(QtGui.QProgressDialog):
 	def __init__(self,parent,tag):

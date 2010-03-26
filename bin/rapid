@@ -2,7 +2,14 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2010 Tobi Vollebregt
 
-from rapid.main import *
+import os, sys
+
+try:
+	from rapid.main import *
+except ImportError:
+	# for development (make sure to not have rapid installed system wide!)
+	sys.path.append(os.path.normpath(os.path.join(os.path.realpath(__file__), '..', '..')))
+	from rapid.main import *
 
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
