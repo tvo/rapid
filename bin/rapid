@@ -35,6 +35,8 @@ if __name__ == '__main__':
 		list_tags(opt_arg(), False)
 	elif verb == 'update' or verb == 'upgrade':
 		upgrade(opt_arg())
+	elif verb == 'collect-garbage':
+		collect_garbage(opt_arg())
 	else:
 		print 'Unknown operation: ' + verb
 		print

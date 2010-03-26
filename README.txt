@@ -21,6 +21,7 @@ Where *verb* is one of:
  * list-pinned-tags: Idem, but only pinned tags.
  * list-packages: List all packages whose name contains *argument*.
  * list-installed-packages: Idem, but only installed packages.
+ * collect-garbage: Keep only the pinned tags and all dependencies.
 
 Examples:
 ----------------
@@ -39,7 +40,5 @@ Bugs/quirks
 Feature suggestions
 ==============
 
- * Garbage collect sdp packages (and pool files?) with pinned tags as root set.
- * Garbage collect pool files with all installed sdp packages as root set.
  * make-sdd command to easily create a modifiable copy of a package (for engine development)
  * make-sdz command could then be useful too

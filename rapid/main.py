@@ -21,6 +21,7 @@ Where verb is one of:
  * list-pinned-tags: Idem, but only pinned tags.
  * list-packages: List all packages whose name contains <argument>.
  * list-installed-packages: Idem, but only installed packages.
+ * collect-garbage: Keep only the pinned tags and all dependencies.
 
 Examples:
 %(progname)s pin xta:latest           # installs latest XTA
@@ -31,6 +32,7 @@ Examples:
 
 
 #  Create rapid module.
+pool_dir = rapid.pool_dir
 rapid = rapid.Rapid()
 
 
@@ -126,6 +128,20 @@ def uninstall_single(p):
 		p.uninstall()
 
 
+def uninstall_single_plus_revdeps(p, dep = False):
+	""" Uninstall and unpin a package and all packages that depend on it."""
+	if p:
+		for d in p.reverse_dependencies:
+			uninstall_single_plus_revdeps(d, True)
+		for t in p.tags:
+			unpin_single(t)
+		if p.installed():
+			print ['Uninstalling: ', 'Uninstalling dependency: '][int(dep)] + p.name
+			p.uninstall()
+		elif not dep:
+			print 'Already uninstalled: ' + p.name
+
+
 def uninstall(searchterm):
 	""" Uninstall all packages matching searchterm."""
 	for name in select('name', searchterm, [p.name for p in rapid.get_installed_packages()]):
@@ -165,6 +181,53 @@ def upgrade(searchterm):
 	""" Upgrade installed tags which match searchterm."""
 	for tag in filter(lambda t: searchterm.lower() in t.lower(), rapid.pinned_tags()):
 		install_single(rapid.packages()[tag])
+
+
+def collect_garbage(arg):
+	""" Simple mark and sweep garbage collector. The root set consists of the
+	    pinned tags."""
+	# Build set marked_packages that should be kept.
+	marked_packages = set()
+	new_packages = set([rapid.packages()[t] for t in rapid.pinned_tags() if t in rapid.tags()])
+	while new_packages:
+		marked_packages.update(new_packages)
+		new_packages = sum([list(p.dependencies) for p in new_packages], [])
+
+	# Uninstall all installed packages not in marked_packages.
+	for p in rapid.packages():
+		if p.installed() and p not in marked_packages:
+			uninstall_single_plus_revdeps(p)
+
+	# Build set marked_files that should be kept.
+	installed_packages = [p for p in rapid.packages() if p.installed()]
+	marked_files = reduce(lambda x, y: x + y.get_files(), installed_packages, [])
+	marked_files = set([f.get_pool_path() for f in marked_files])
+
+	# Remove all files not in marked_files.
+	magic_word = 'yes, remove pool files too'
+	really_remove = (arg == magic_word)
+	count = 0
+	size = 0
+	for i in range(0, 256):
+		d = os.path.join(pool_dir, '%02x' % i)
+		for f in os.listdir(d):
+			f = os.path.join(d, f)
+			if not f in marked_files:
+				count += 1
+				size += os.path.getsize(f)
+				if really_remove: os.unlink(f)
+	if really_remove:
+		print '%.2f megabytes / %d files collected from the pool.' % (size / (1024.*1024.), count)
+	else:
+		print '%.2f megabytes / %d files can be collected from the pool.' % (size / (1024.*1024.), count)
+		if count > 0:
+			print
+			print '#' * 80
+			print '# %-76s #' % 'Collecting pool files will delete the data from disk permantly.'.center(76)
+			print '# %-76s #' % 'You will have to download the data again in case you need it.'.center(76)
+			print '# %-76s #' % ('Run again with \'%s\' to collect them.' % magic_word).center(76)
+			print '#' * 80
+			print
 
 
 def req_arg():
