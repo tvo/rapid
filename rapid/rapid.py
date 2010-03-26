@@ -99,15 +99,40 @@ class DependencyException(RapidException):
 
 ################################################################################
 
+class RepositorySource:
+	def __init__(self, rapid):
+		self.__repositories = None
+		self.rapid = rapid
+		self.cache_dir = rapid.cache_dir
+		self.repos_gz = os.path.join(self.cache_dir, 'repos.gz')
+
+	def __call__(self):
+		""" Download and return list of repositories."""
+		if self.__repositories:
+			return self.__repositories
+
+		self.rapid.downloader.conditional_get_request(master_url, self.repos_gz)
+
+		with closing(gzip.open(self.repos_gz)) as f:
+			unique = set([x.split(',')[1] for x in f])
+			self.__repositories = [OnlineRepository(self.rapid, x) for x in unique]
+
+		# Collect OfflineRepositories
+		for dirent in os.listdir(self.cache_dir):
+			path = os.path.join(self.cache_dir, dirent)
+			if os.path.isdir(path) and path not in [r.cache_dir for r in self.__repositories]:
+				self.__repositories.append(OfflineRepository(self.rapid, dirent))
+
+		return self.__repositories
+
+
 class Rapid:
 	""" Repository container."""
 	def __init__(self):
-		self.__repositories = None
 		self.__packages = None
 		self.__packages_by_tag = None
 		self.master_url = master_url
 		self.cache_dir = content_dir
-		self.repos_gz = os.path.join(self.cache_dir, 'repos.gz')
 		self.packages_gz = os.path.join(self.cache_dir, 'packages.gz')
 
 		mkdir(spring_dir)
@@ -120,28 +145,7 @@ class Rapid:
 				os.mkdir(os.path.join(pool_dir, '%02x' % i))
 
 		self.downloader = Downloader(os.path.join(content_dir, 'downloader.cfg'))
-
-	def update(self):
-		""" Update of the master list of repositories."""
-		self.downloader.conditional_get_request(self.master_url, self.repos_gz)
-
-	def get_repositories(self):
-		""" Download and return list of repositories."""
-		if self.__repositories:
-			return self.__repositories
-
-		self.update()
-		with closing(gzip.open(self.repos_gz)) as f:
-			unique = set([x.split(',')[1] for x in f])
-			self.__repositories = [OnlineRepository(self, x) for x in unique]
-
-		# Collect OfflineRepositories
-		for dirent in os.listdir(self.cache_dir):
-			path = os.path.join(self.cache_dir, dirent)
-			if os.path.isdir(path) and path not in [r.cache_dir for r in self.__repositories]:
-				self.__repositories.append(OfflineRepository(self, dirent))
-
-		return self.__repositories
+		self.get_repositories = RepositorySource(self)
 
 	def read_packages_gz(self):
 		""" Reads global packages.gz into a dictionary of Packages.
@@ -198,7 +202,7 @@ class Rapid:
 		# (This assumes package hex is (sufficiently) unique.)
 		for p in self.__packages.itervalues():
 			if not p.repository:
-				repos = [r for r in self.__repositories if r.has_package(p)]
+				repos = [r for r in self.get_repositories() if r.has_package(p)]
 				if repos:
 					self.__packages[p.name] = Package(p.hex, p.name, p.dependencies, p.tags, repos[0])
 
