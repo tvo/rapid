@@ -8,6 +8,7 @@ from hashlib import md5
 from urlparse import urlparse
 from StringIO import StringIO
 import binascii, gzip, os, struct
+import ConfigParser
 
 from downloader import Downloader, atomic_write
 
@@ -240,6 +241,53 @@ class PackageSource:
 
 ################################################################################
 
+class PinnedTags:
+	def __init__(self):
+		self.__config_path = os.path.join(content_dir, 'main.cfg')
+		self.__config = ConfigParser.RawConfigParser()
+		self.__config.read(self.__config_path)
+		self.__pinned_tags = set()
+		if not self.__config.has_section('tags'):
+			self.__config.add_section('tags')
+		if self.__config.has_option('tags', 'pinned'):
+			self.__pinned_tags = set([s for s in self.__config.get('tags', 'pinned').split(',') if s])
+
+	def write(self):
+		# Write configuration.
+		self.__config.set('tags', 'pinned', ','.join(self.__pinned_tags))
+		with open(self.__config_path, 'wb') as f:
+			self.__config.write(f)
+
+	def add(self, tag):
+		self.__pinned_tags.add(tag)
+		self.write()
+
+	def clear(self):
+		self.__pinned_tags.clear()
+		self.write()
+
+	def remove(self, tag):
+		self.__pinned_tags.remove(tag)
+		self.write()
+
+	def update(self, tags):
+		self.__pinned_tags.update(tags)
+		self.write()
+
+	def __getitem__(self, key):
+		return self.__pinned_tags[key]
+
+	def __contains__(self, tag):
+		return tag in self.__pinned_tags
+
+	def __len__(self):
+		return len(self.__pinned_tags)
+
+	def __iter__(self):
+		return self.__pinned_tags.__iter__();
+
+################################################################################
+
 class Rapid:
 	def __init__(self, downloader = None):
 		mkdir(spring_dir)
@@ -254,6 +302,7 @@ class Rapid:
 		self.__downloader = downloader or Downloader(os.path.join(content_dir, 'downloader.cfg'))
 		self.__repositories = RepositorySource(content_dir, self.__downloader)
 		self.__packages = PackageSource(content_dir, self.__repositories)
+		self.__pinned_tags = PinnedTags()
 
 	def repositories(self):
 		return self.__repositories
@@ -263,6 +312,9 @@ class Rapid:
 
 	def tags(self):
 		return self.__packages.tags()
+
+	def pinned_tags(self):
+		return self.__pinned_tags
 
 ################################################################################
 
