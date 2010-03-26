@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore, QtGui
-from rapid import models,main
+from rapid import models
 
 class DownloadDialog(QtGui.QProgressDialog):
 	def __init__(self,parent,tag):
@@ -50,10 +50,11 @@ class DownloadThread(QtCore.QThread):
 
 	def run(self):
 		#FIXME: we get multiple tags. Which do we choose?
-		by_tag = main.rapid.get_package_by_tag(self.tag_or_name.split(',')[0])
-		#if by_tag:
-		#	main.pin_single(by_tag)
-		self.install_single(by_tag or main.rapid.get_package_by_name(self.tag_or_name))
+		try:
+			p = main.rapid.packages()[self.tag_or_name.split(',')[0]]
+		except KeyError:
+			p = main.rapid.packages()[self.tag_or_name]
+		self.install_single(p)
 		self.emit( QtCore.SIGNAL("downloadComplete") )
 
 class RapidListWidgetBase(QtGui.QWidget):

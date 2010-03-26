@@ -32,9 +32,3 @@ if __name__ == '__main__':
 		print 'Unknown operation: ' + verb
 		print
 		usage()
-
-
-	# Write configuration.
-	config.set('tags', 'pinned', ','.join(pinned_tags))
-	with open(config_path, 'wb') as f:
-		config.write(f)

@@ -30,18 +30,6 @@ Examples:
 	sys.exit(1)
 
 
-# Read configuration (i.e. list of pinned tags)
-config_path = os.path.join(rapid.content_dir, 'main.cfg')
-config = ConfigParser()
-config.read(config_path)
-pinned_tags = []
-
-if not config.has_section('tags'):
-	config.add_section('tags')
-if config.has_option('tags', 'pinned'):
-	pinned_tags = set([s for s in config.get('tags', 'pinned').split(',') if s])
-
-
 #  Create rapid module.
 rapid = rapid.Rapid()
 
@@ -77,33 +65,33 @@ def select(noun, needle, haystack):
 def pin_single(tag):
 	""" Pin a tag. This means any package having this tag will automatically be
 	    installed and upgraded."""
-	if not tag in pinned_tags:
+	if not tag in rapid.pinned_tags():
 		print 'Pinning: ' + tag
-		pinned_tags.add(tag)
+		rapid.pinned_tags().add(tag)
 	else:
 		print 'Already pinned: ' + tag
 
 
 def pin(searchterm):
 	""" Pin all tags matching searchterm and install the corresponding packages."""
-	for t in select('tag', searchterm, rapid.get_packages_by_tag().iterkeys()):
+	for t in select('tag', searchterm, rapid.tags()):
 		pin_single(t)
-		install_single(rapid.get_package_by_tag(t))
+		install_single(rapid.packages()[t])
 
 
 def unpin_single(tag):
 	""" Unpin a tag. This means packages having this tag will not be
 	    automatically upgraded anymore. Does not uninstall anything."""
-	if tag in pinned_tags:
+	if tag in rapid.pinned_tags():
 		print 'Unpinning: ' + tag
-		pinned_tags.remove(tag)
+		rapid.pinned_tags().remove(tag)
 	else:
 		print 'Not pinned: ' + tag
 
 
 def unpin(searchterm):
 	""" Unpin all tags matching searchterm."""
-	for t in select('pinned tag', searchterm, pinned_tags):
+	for t in select('pinned tag', searchterm, rapid.pinned_tags()):
 		unpin_single(t)
 
 
@@ -122,8 +110,8 @@ def install_single(p, dep = False):
 
 def install(searchterm):
 	""" Install all packages matching searchterm."""
-	for name in select('name', searchterm, rapid.get_names().iterkeys()):
-		install_single(rapid.get_package_by_name(name))
+	for name in select('name', searchterm, [p.name for p in rapid.packages()]):
+		install_single(rapid.packages()[name])
 
 
 def uninstall_single(p):
@@ -141,18 +129,18 @@ def uninstall_single(p):
 def uninstall(searchterm):
 	""" Uninstall all packages matching searchterm."""
 	for name in select('name', searchterm, [p.name for p in rapid.get_installed_packages()]):
-		uninstall_single(rapid.get_package_by_name(name))
+		uninstall_single(rapid.packages()[name])
 
 
 def list_packages(searchterm, available):
 	""" List all packages whose name matches searchterm."""
 	s = searchterm.lower()
 	print 'Installed packages:'
-	for p in filter(lambda p: s in p.name.lower(), rapid.get_installed_packages()):
+	for p in [p for p in rapid.packages() if p.installed() and s in p.name.lower()]:
 		print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 	if available:
 		print 'Available packages:'
-		for p in rapid.get_not_installed_packages():
+		for p in [p for p in rapid.packages() if not p.installed() and s in p.name.lower()]:
 			print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 
 
@@ -160,23 +148,23 @@ def list_tags(searchterm, available):
 	""" List all tags which match searchterm."""
 	s = searchterm.lower()
 	print 'Pinned tags:'
-	for tag in filter(lambda t: s in t.lower(), pinned_tags):
-		p = rapid.get_package_by_tag(tag)
+	for tag in filter(lambda t: s in t.lower(), rapid.pinned_tags()):
+		p = rapid.packages()[tag]
 		if p:
 			print '  %-40s (%s)' % (tag, p.name)
 		else:
 			print '  %-40s [dangling tag]' % tag
 	if available:
 		print 'Available tags:'
-		for tag in (set(rapid.get_packages_by_tag()) - pinned_tags):
-			p = rapid.get_package_by_tag(tag)
+		for tag in (set(rapid.tags()) - set(rapid.pinned_tags())):
+			p = rapid.packages()[tag]
 			print '  %-40s (%s)' % (tag, p.name)
 
 
 def upgrade(searchterm):
 	""" Upgrade installed tags which match searchterm."""
-	for tag in filter(lambda t: searchterm.lower() in t.lower(), pinned_tags):
-		install_single(rapid.get_package_by_tag(tag))
+	for tag in filter(lambda t: searchterm.lower() in t.lower(), rapid.pinned_tags()):
+		install_single(rapid.packages()[tag])
 
 
 def req_arg():
