@@ -35,8 +35,10 @@ if __name__ == '__main__':
 		list_tags(opt_arg(), False)
 	elif verb == 'update' or verb == 'upgrade':
 		upgrade(opt_arg())
-	elif verb == 'collect-garbage':
-		collect_garbage(opt_arg())
+	elif verb == 'uninstall-unpinned':
+		uninstall_unpinned()
+	elif verb == 'collect-pool':
+		collect_pool()
 	else:
 		print 'Unknown operation: ' + verb
 		print

@@ -21,7 +21,8 @@ Where verb is one of:
  * list-pinned-tags: Idem, but only pinned tags.
  * list-packages: List all packages whose name contains <argument>.
  * list-installed-packages: Idem, but only installed packages.
- * collect-garbage: Keep only the pinned tags and all dependencies.
+ * uninstall-unpinned: Keep only the pinned tags and all dependencies.
+ * collect-pool: Remove pool files not needed by any installed package.
 
 Examples:
 %(progname)s pin xta:latest           # installs latest XTA
@@ -183,9 +184,9 @@ def upgrade(searchterm):
 		install_single(rapid.packages()[tag])
 
 
-def collect_garbage(arg):
+def uninstall_unpinned():
 	""" Simple mark and sweep garbage collector. The root set consists of the
-	    pinned tags."""
+	    pinned tags. This does not touch pool files."""
 	# Build set marked_packages that should be kept.
 	marked_packages = set()
 	new_packages = set([rapid.packages()[t] for t in rapid.pinned_tags() if t in rapid.tags()])
@@ -193,41 +194,59 @@ def collect_garbage(arg):
 		marked_packages.update(new_packages)
 		new_packages = sum([list(p.dependencies) for p in new_packages], [])
 
-	# Uninstall all installed packages not in marked_packages.
-	for p in rapid.packages():
-		if p.installed() and p not in marked_packages:
+	# Build set of packages that will be removed.
+	garbage = set(set([p for p in rapid.packages() if p.installed()]) - marked_packages)
+
+	# Confirmation?
+	if (not raw_input('Uninstall %s? [y/N]: ' % ', '.join([p.name for p in garbage])).startswith('y')):
+		return
+
+	# Uninstall all garbage.
+	for p in garbage:
+		if p.installed():
 			uninstall_single_plus_revdeps(p)
 
+
+def collect_pool():
+	""" Simple mark and sweep garbage collector. The root set consists of the
+	    installed packages. This touches only pool files."""
 	# Build set marked_files that should be kept.
 	installed_packages = [p for p in rapid.packages() if p.installed()]
 	marked_files = reduce(lambda x, y: x + y.get_files(), installed_packages, [])
 	marked_files = set([f.get_pool_path() for f in marked_files])
 
-	# Remove all files not in marked_files.
-	magic_word = 'yes, remove pool files too'
-	really_remove = (arg == magic_word)
-	count = 0
-	size = 0
-	for i in range(0, 256):
-		d = os.path.join(pool_dir, '%02x' % i)
-		for f in os.listdir(d):
-			f = os.path.join(d, f)
-			if not f in marked_files:
-				count += 1
-				size += os.path.getsize(f)
-				if really_remove: os.unlink(f)
-	if really_remove:
-		print '%.2f megabytes / %d files collected from the pool.' % (size / (1024.*1024.), count)
-	else:
-		print '%.2f megabytes / %d files can be collected from the pool.' % (size / (1024.*1024.), count)
-		if count > 0:
-			print
-			print '#' * 80
-			print '# %-76s #' % 'Collecting pool files will delete the data from disk permantly.'.center(76)
-			print '# %-76s #' % 'You will have to download the data again in case you need it.'.center(76)
-			print '# %-76s #' % ('Run again with \'%s\' to collect them.' % magic_word).center(76)
-			print '#' * 80
-			print
+	def gc(really_remove):
+		# Remove all files not in marked_files.
+		count = 0
+		size = 0
+		for i in range(0, 256):
+			d = os.path.join(pool_dir, '%02x' % i)
+			for f in os.listdir(d):
+				f = os.path.join(d, f)
+				if not f in marked_files:
+					count += 1
+					size += os.path.getsize(f)
+					if really_remove: os.unlink(f)
+		return (count, size)
+
+	count, size = gc(False)
+
+	print '%.2f megabytes / %d files can be collected from the pool.' % (size / (1024.*1024.), count)
+	if count == 0:
+		return
+
+	# Confirmation?
+	print
+	print '#' * 80
+	print '# %-76s #' % 'Collecting pool files will delete the data from disk permantly.'.center(76)
+	print '# %-76s #' % 'You will have to download the data again in case you need it.'.center(76)
+	print '#' * 80
+	print
+	if (not raw_input('Delete %d pool files? [y/N]: ' % count).startswith('y')):
+		return
+
+	count, size = gc(True)
+	print '%.2f megabytes / %d files deleted from the pool.' % (size / (1024.*1024.), count)
 
 
 def req_arg():
