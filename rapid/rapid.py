@@ -28,7 +28,7 @@ def set_spring_dir(path):
 	content_dir = os.path.join(spring_dir, 'rapid')
 
 if os.name == 'posix':
-	set_spring_dir(os.path.join(os.environ['HOME'], '.spring'))
+	set_spring_dir(os.path.expanduser('~/.spring'))
 #FIXME: elif os.name =='nt':
 else:
 	raise NotImplementedError('Unknown OS: %s' % os.name)
