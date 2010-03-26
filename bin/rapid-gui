@@ -5,11 +5,11 @@ import os, sys
 from PyQt4 import QtCore, QtGui
 
 try:
-	from rapid import models
+	from rapid import main,models
 except ImportError:
 	# for development (make sure to not have rapid installed system wide!)
 	sys.path.append(os.path.normpath(os.path.join(os.path.realpath(__file__), '..', '..')))
-	from rapid import models
+	from rapid import main,models
 
 
 class DownloadDialog(QtGui.QProgressDialog):
