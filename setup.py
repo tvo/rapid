@@ -3,9 +3,9 @@ from distutils.core import setup
 
 setup(
     name='rapid-spring',
-    version='0.1.1',
+    version='0.1.2',
     author='Tobi Vollebregt',
-    author_email='',
+    author_email='tobivollebregt@gmail.com',
     packages=['rapid'],
     scripts=['bin/rapid','bin/rapid-gui'],
     url='http://pypi.python.org/pypi/rapid-spring/',
