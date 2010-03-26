@@ -80,6 +80,23 @@ class StreamerFormatException(RapidException):
 	def __str__(self):
 		return self.field
 
+
+class OfflineRepositoryException(RapidException):
+	""" Raised when attempting to download something from an offline repository.
+	    (i.e. the repository that has the package is not listed in repos.gz anymore.)"""
+	pass
+
+
+class DetachedPackageException(RapidException):
+	""" Raised when attempting to download something from a detached package.
+	    (i.e. it is not in any repositories' versions.gz)"""
+	pass
+
+
+class DependencyException(RapidException):
+	""" Raised when install/uninstall fails because of dependencies."""
+	pass
+
 ################################################################################
 
 class Rapid:
@@ -116,7 +133,13 @@ class Rapid:
 		self.update()
 		with closing(gzip.open(self.repos_gz)) as f:
 			unique = set([x.split(',')[1] for x in f])
-			self.__repositories = [Repository(self, x) for x in unique]
+			self.__repositories = [OnlineRepository(self, x) for x in unique]
+
+		# Collect OfflineRepositories
+		for dirent in os.listdir(self.cache_dir):
+			path = os.path.join(self.cache_dir, dirent)
+			if os.path.isdir(path) and path not in [r.cache_dir for r in self.__repositories]:
+				self.__repositories.append(OfflineRepository(self, dirent))
 
 		return self.__repositories
 
@@ -171,6 +194,14 @@ class Rapid:
 			for d in p.dependencies:
 				d.reverse_dependencies.add(p)
 
+		# Try to 'repair' detached packages.
+		# (This assumes package hex is (sufficiently) unique.)
+		for p in self.__packages.itervalues():
+			if not p.repository:
+				repos = [r for r in self.__repositories if r.has_package(p)]
+				if repos:
+					self.__packages[p.name] = Package(p.hex, p.name, p.dependencies, p.tags, repos[0])
+
 		return self.__packages
 
 	def get_package_by_name(self, name):
@@ -213,21 +244,24 @@ class Rapid:
 ################################################################################
 
 class Repository:
-	""" A rapid package repository."""
-	def __init__(self, rapid, url):
+	def __init__(self, rapid, cache_dir):
 		self.__packages = None
 		self.rapid = rapid
-		self.url = url
-		self.cache_dir = os.path.join(self.rapid.cache_dir, urlparse(url).netloc)
+		self.cache_dir = os.path.join(self.rapid.cache_dir, cache_dir)
 		self.package_cache_dir = os.path.join(self.cache_dir, 'packages')
 		self.versions_gz = os.path.join(self.cache_dir, 'versions.gz')
 
 		mkdir(self.cache_dir)
 		mkdir(self.package_cache_dir)
 
+	def has_package(self, p):
+		""" Return true iff p belongs to this repository."""
+		if p.repository:
+			return p.repository == self
+		return os.path.exists(os.path.join(self.package_cache_dir, p.hex + '.sdp'))
+
 	def update(self):
-		""" Update of the list of packages of this repository."""
-		self.rapid.downloader.conditional_get_request(self.url + '/versions.gz', self.versions_gz)
+		pass
 
 	def read_versions_gz(self):
 		""" Reads versions.gz-formatted file into a dictionary of Packages."""
@@ -259,6 +293,20 @@ class Repository:
 		self.__packages = self.read_versions_gz()
 		return self.__packages
 
+
+class OfflineRepository(Repository):
+	pass
+
+
+class OnlineRepository(Repository):
+	def __init__(self, rapid, url):
+		Repository.__init__(self, rapid, urlparse(url).netloc)
+		self.url = url
+
+	def update(self):
+		""" Update of the list of packages of this repository."""
+		self.rapid.downloader.conditional_get_request(self.url + '/versions.gz', self.versions_gz)
+
 ################################################################################
 
 class Package:
@@ -279,7 +327,12 @@ class Package:
 
 	def download(self):
 		""" Download the package from the repository."""
-		self.repository.rapid.downloader.onetime_get_request(self.repository.url + '/packages/' + self.hex + '.sdp', self.cache_file)
+		if not self.available():
+			if not self.repository:
+				raise DetachedPackageException()
+			if not hasattr(self.repository, 'url'):
+				raise OfflineRepositoryException()
+			self.repository.rapid.downloader.onetime_get_request('%s/packages/%s.sdp' % (self.repository.url, self.hex), self.cache_file)
 
 	def get_files(self):
 		""" Download .sdp file and return the list of files in it."""
@@ -340,11 +393,16 @@ class Package:
 		if len(expected_files) == 0:
 			return
 
+		# Can not download from offline repository...
+		if not hasattr(self.repository, 'url'):
+			raise OfflineRepositoryException()
+
 		# Build HTTP POST data.
 		postdata = gzip_string(bits.tostring())
 
 		# Perform HTTP POST request and download and process the response.
-		with closing(self.repository.rapid.downloader.post(self.repository.url + '/streamer.cgi?' + self.hex, postdata)) as remote:
+		url = '%s/streamer.cgi?%s' % (self.repository.url, self.hex)
+		with closing(self.repository.rapid.downloader.post(url, postdata)) as remote:
 			if not remote.info().has_key('Content-Length'):
 				raise StreamerFormatException('Content-Length')
 
@@ -385,7 +443,9 @@ class Package:
 
 	def install(self, progress = None):
 		""" Install the package by hardlinking it into Spring dir."""
-		if not self.installed() and self.can_be_installed():
+		if not self.installed():
+			if not self.can_be_installed():
+				raise DependencyException()
 			self.download_files(self.get_missing_files(), progress)
 			#FIXME: Windows support
 			os.link(self.cache_file, self.get_installed_path())
@@ -402,12 +462,19 @@ class Package:
 
 	def uninstall(self):
 		""" Uninstall the package by unlinking it from Spring dir."""
-		if self.installed() and self.can_be_uninstalled():
+		if self.installed():
+			if not self.can_be_uninstalled():
+				raise DependencyException()
 			os.unlink(self.get_installed_path())
 
 	def installed(self):
 		""" Return true if the package is installed, false otherwise."""
 		return os.path.exists(self.get_installed_path())
+
+	def available(self):
+		""" Return true iff the file list is available locally. This does not
+		    imply the pool files are all available too."""
+		return hasattr(self, 'cache_file') and os.path.exists(self.cache_file)
 
 ################################################################################
 
@@ -499,15 +566,51 @@ class TestRapid(unittest.TestCase):
 
 	def test_install_missing_dependency(self):
 		p = self.rapid.get_package_by_tag('xta:latest')
-		p.install()
+		self.assertRaises(DependencyException, lambda: p.install())
 		self.assertFalse(p.installed())   # install should have failed
 
 	def test_uninstall_dependency_check(self):
 		p = self.rapid.get_package_by_tag('xta:latest')
 		self.install(p)
 		d = self.rapid.get_package_by_name('dependency')
-		d.uninstall()
+		self.assertRaises(DependencyException, lambda: d.uninstall())
 		self.assertTrue(d.installed())   # uninstall should have failed
+
+	def test_detached_package(self):
+		self.rapid.get_packages_by_name()
+		self.setUp()   # re-initialise
+		self.rapid.downloader.www['http://ts1/versions.gz'] = gzip_string('')
+		p = self.rapid.get_package_by_name('dependency')
+		self.assertFalse(p.repository)
+		self.assertFalse(hasattr(p, 'cache_file'))
+		self.assertFalse(p.available())
+		self.assertRaises(DetachedPackageException, lambda: p.get_files())
+		self.assertRaises(DetachedPackageException, lambda: p.install())
+
+	def test_detached_package_repair(self):
+		self.rapid.get_packages_by_name()
+		self.rapid.get_package_by_name('dependency').get_files()
+		self.setUp()   # re-initialise
+		self.rapid.downloader.www['http://ts1/versions.gz'] = gzip_string('')
+		p = self.rapid.get_package_by_name('dependency')
+		self.assertTrue(p.repository)
+		self.assertTrue(hasattr(p, 'cache_file'))
+		self.assertTrue(p.available())
+		p.get_files()
+
+	def test_disappeared_repo_sdp_cached(self):
+		self.rapid.get_packages_by_name()
+		self.rapid.get_package_by_tag('xta:latest').get_files()
+		self.setUp()   # re-initialise
+		self.rapid.downloader.www[master_url] = gzip_string('')
+		self.rapid.get_package_by_tag('xta:latest').get_files()
+
+	def test_disappeared_repo_sdp_not_cached(self):
+		self.rapid.get_packages_by_name()
+		self.setUp()   # re-initialise
+		self.rapid.downloader.www[master_url] = gzip_string('')
+		p = self.rapid.get_package_by_tag('xta:latest')
+		self.assertRaises(OfflineRepositoryException, lambda: p.get_files())
 
 if __name__ == '__main__':
 	unittest.main()
