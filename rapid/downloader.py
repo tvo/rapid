@@ -107,8 +107,8 @@ class Downloader:
 from StringIO import StringIO
 
 class MockDownloader:
-	def __init__(self):
-		self.www = {}
+	def __init__(self, www = None):
+		self.www = www or {}
 		self.visited = set()
 		self._304 = False
 
@@ -140,13 +140,9 @@ class TestDownloader(unittest.TestCase):
 	test_file = os.path.join(test_dir, 'repos.gz')
 	config_file = os.path.join(test_dir, 'test.cfg')
 
-	def setUp(self):
+	def setUp(self, factory = lambda: Downloader(TestDownloader.config_file)):
 		os.mkdir(self.test_dir)
-		if False:   # change to test (Mock)Downloader
-			self.downloader = Downloader(self.config_file)
-		else:
-			self.downloader = MockDownloader()
-			self.downloader.www[self.url] = ''
+		self.downloader = factory()
 
 	def tearDown(self):
 		shutil.rmtree(self.test_dir)
@@ -163,6 +159,13 @@ class TestDownloader(unittest.TestCase):
 	def test_post(self):
 		#TODO: implement test_post
 		pass
+
+class TestMockDownloader(TestDownloader):
+	def setUp(self):
+		TestDownloader.setUp(self, lambda: MockDownloader({self.url: ''}))
+
+	def test_init(self):
+		MockDownloader()   # test __init__ without arguments
 
 if __name__ == '__main__':
 	unittest.main()
