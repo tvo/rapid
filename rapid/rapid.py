@@ -100,52 +100,53 @@ class DependencyException(RapidException):
 ################################################################################
 
 class RepositorySource:
-	def __init__(self, rapid):
+	def __init__(self, cache_dir, downloader):
 		self.__repositories = None
-		self.rapid = rapid
-		self.cache_dir = rapid.cache_dir
-		self.repos_gz = os.path.join(self.cache_dir, 'repos.gz')
+		self.cache_dir = cache_dir
+		self.downloader = downloader
+		self.repos_gz = os.path.join(cache_dir, 'repos.gz')
 
-	def __call__(self):
+	def load(self):
 		""" Download and return list of repositories."""
-		if self.__repositories:
-			return self.__repositories
 
-		self.rapid.downloader.conditional_get_request(master_url, self.repos_gz)
-
+		# Collect OnlineRepositories
+		self.downloader.conditional_get_request(master_url, self.repos_gz)
 		with closing(gzip.open(self.repos_gz)) as f:
 			unique = set([x.split(',')[1] for x in f])
-			self.__repositories = [OnlineRepository(self.rapid, x) for x in unique]
+			self.__repositories = [OnlineRepository(os.path.join(self.cache_dir, urlparse(x).netloc), self.downloader, x) for x in unique]
 
 		# Collect OfflineRepositories
 		for dirent in os.listdir(self.cache_dir):
 			path = os.path.join(self.cache_dir, dirent)
 			if os.path.isdir(path) and path not in [r.cache_dir for r in self.__repositories]:
-				self.__repositories.append(OfflineRepository(self.rapid, dirent))
+				self.__repositories.append(OfflineRepository(path))
 
+	def get_list(self):
+		if not self.__repositories: self.load()
 		return self.__repositories
 
+	def __getitem__(self, key):
+		return self.get_list()[key]
 
-class Rapid:
-	""" Repository container."""
-	def __init__(self):
-		self.__packages = None
-		self.__packages_by_tag = None
-		self.master_url = master_url
-		self.cache_dir = content_dir
-		self.packages_gz = os.path.join(self.cache_dir, 'packages.gz')
+	def __contains__(self, key):
+		return key in self.get_list()
 
-		mkdir(spring_dir)
-		mkdir(content_dir)
-		mkdir(package_dir)
+	def __len__(self):
+		return len(self.get_list())
 
-		if not os.path.exists(pool_dir):
-			os.mkdir(pool_dir)
-			for i in range(0, 256):
-				os.mkdir(os.path.join(pool_dir, '%02x' % i))
+	def __iter__(self):
+		return self.get_list().__iter__()
 
-		self.downloader = Downloader(os.path.join(content_dir, 'downloader.cfg'))
-		self.get_repositories = RepositorySource(self)
+################################################################################
+
+class PackageSource:
+	def __init__(self, cache_dir, repositories):
+		self.__packages_dict = None
+		self.__packages_list = None
+		self.__tags = None
+		self.cache_dir = cache_dir
+		self.repositories = repositories
+		self.packages_gz = os.path.join(cache_dir, 'packages.gz')
 
 	def read_packages_gz(self):
 		""" Reads global packages.gz into a dictionary of Packages.
@@ -168,7 +169,7 @@ class Rapid:
 		# Write to temporary file
 		tempfile = self.packages_gz + '.tmp'
 		with closing(gzip.open(tempfile, 'wb')) as f:
-			for p in self.__packages.itervalues():
+			for p in self:
 				# tags, hex, dependencies, name
 				f.write(','.join(['|'.join(p.tags), p.hex, '|'.join(p.dependencies), p.name]) + '\n')
 
@@ -178,80 +179,97 @@ class Rapid:
 				os.remove(self.packages_gz)
 			os.rename(tempfile, self.packages_gz)
 
-	def get_packages_by_name(self):
-		""" Return package with given name or None if there isn't any."""
-		if self.__packages:
-			return self.__packages
-
-		self.__packages = self.read_packages_gz()
-
+	def load(self):
+		self.__packages_dict = self.read_packages_gz()
 		# FIXME: this is broken if a package is in repo1 with tag1 and in repo2 with tag2
-		for r in self.get_repositories():
-			self.__packages.update(r.get_packages())
-
+		for r in self.repositories:
+			self.__packages_dict.update(r.get_packages())
+		self.__packages_list = self.__packages_dict.values()
 		self.write_packages_gz()
 
 		# Resolve dependencies and calculate reverse dependencies.
 		# Dependencies missing in all repositories are silently discarded.
-		for p in self.__packages.itervalues():
-			p.dependencies = set([self.__packages[name] for name in p.dependencies if name in self.__packages])
+		for p in self:
+			p.dependencies = set([self[name] for name in p.dependencies if name in self])
 			for d in p.dependencies:
 				d.reverse_dependencies.add(p)
 
 		# Try to 'repair' detached packages.
 		# (This assumes package hex is (sufficiently) unique.)
-		for p in self.__packages.itervalues():
+		for p in self:
 			if not p.repository:
-				repos = [r for r in self.get_repositories() if r.has_package(p)]
+				repos = [r for r in self.repositories if r.has_package(p)]
 				if repos:
-					self.__packages[p.name] = Package(p.hex, p.name, p.dependencies, p.tags, repos[0])
+					self.__packages_dict[p.name] = Package(p.hex, p.name, p.dependencies, p.tags, repos[0])
+		self.__packages_list = self.__packages_dict.values()
 
+		# Create set of tags and mapping from tag to Package objects.
+		self.__tags = set()
+		for p in self:
+			self.__packages_dict.update([(t, p) for t in p.tags])
+			self.__tags.update(p.tags)
+
+		# Make __getitem__ idempotent.
+		self.__packages_dict.update([(p, p) for p in self])
+
+	def get_list(self):
+		if not self.__packages_list: self.load()
+		return self.__packages_list
+
+	def get_dict(self):
+		if not self.__packages_dict: self.load()
+		return self.__packages_dict
+
+	def tags(self):
+		if not self.__tags: self.load()
+		return self.__tags
+
+	def __getitem__(self, key):
+		if type(key) in (int, slice):
+			return self.get_list()[key]
+		return self.get_dict()[key]
+
+	def __contains__(self, key):
+		return key in self.get_dict()
+
+	def __len__(self):
+		return len(self.get_list())
+
+	def __iter__(self):
+		return self.get_list().__iter__()
+
+################################################################################
+
+class Rapid:
+	def __init__(self, downloader = None):
+		mkdir(spring_dir)
+		mkdir(content_dir)
+		mkdir(package_dir)
+
+		if not os.path.exists(pool_dir):
+			os.mkdir(pool_dir)
+			for i in range(0, 256):
+				os.mkdir(os.path.join(pool_dir, '%02x' % i))
+
+		self.__downloader = downloader or Downloader(os.path.join(content_dir, 'downloader.cfg'))
+		self.__repositories = RepositorySource(content_dir, self.__downloader)
+		self.__packages = PackageSource(content_dir, self.__repositories)
+
+	def repositories(self):
+		return self.__repositories
+
+	def packages(self):
 		return self.__packages
 
-	def get_package_by_name(self, name):
-		""" Return package with given name or None if there isn't any."""
-		if name in self.get_packages_by_name():
-			return self.__packages[name]
-
-		return None
-
-	def get_packages_by_tag(self):
-		""" Return a dictionary mapping tag to Package."""
-		if self.__packages_by_tag:
-			return self.__packages_by_tag
-
-		self.__packages_by_tag = {}
-		for p in self.get_packages_by_name().itervalues():
-			self.__packages_by_tag.update(dict([(t, p) for t in p.tags]))
-
-		return self.__packages_by_tag
-
-	def get_package_by_tag(self, tag):
-		""" Return package with given tag or None if there isn't any."""
-		if tag in self.get_packages_by_tag():
-			return self.__packages_by_tag[tag]
-
-		return None
-
-	def get_packages(self):
-		""" Return something that can iterate over all packages."""
-		return self.get_packages_by_name().itervalues()
-
-	def get_installed_packages(self):
-		""" Return something that can iterate over all installed packages."""
-		return filter(lambda p: p.installed(), self.get_packages())
-
-	def get_not_installed_packages(self):
-		""" Return something that can iterate over all not-installed packages."""
-		return filter(lambda p: not p.installed(), self.get_packages())
+	def tags(self):
+		return self.__packages.tags()
 
 ################################################################################
 
 class Repository:
-	def __init__(self, rapid, cache_dir):
+	def __init__(self, cache_dir):
 		self.__packages = None
-		self.rapid = rapid
-		self.cache_dir = os.path.join(self.rapid.cache_dir, cache_dir)
+		self.cache_dir = cache_dir
 		self.package_cache_dir = os.path.join(self.cache_dir, 'packages')
 		self.versions_gz = os.path.join(self.cache_dir, 'versions.gz')
 
@@ -279,7 +297,8 @@ class Repository:
 			assert (packages[name].hex == hex)
 			assert (packages[name].dependencies == deps)
 			assert (packages[name].name == name)
-			packages[name].tags.add(tag)
+			if tag:
+				packages[name].tags.add(tag)
 
 		with closing(gzip.open(self.versions_gz)) as f:
 			map(read_line, f)
@@ -303,13 +322,14 @@ class OfflineRepository(Repository):
 
 
 class OnlineRepository(Repository):
-	def __init__(self, rapid, url):
-		Repository.__init__(self, rapid, urlparse(url).netloc)
+	def __init__(self, cache_dir, downloader, url):
+		Repository.__init__(self, cache_dir)
+		self.downloader = downloader
 		self.url = url
 
 	def update(self):
 		""" Update of the list of packages of this repository."""
-		self.rapid.downloader.conditional_get_request(self.url + '/versions.gz', self.versions_gz)
+		self.downloader.conditional_get_request(self.url + '/versions.gz', self.versions_gz)
 
 ################################################################################
 
@@ -336,7 +356,7 @@ class Package:
 				raise DetachedPackageException()
 			if not hasattr(self.repository, 'url'):
 				raise OfflineRepositoryException()
-			self.repository.rapid.downloader.onetime_get_request('%s/packages/%s.sdp' % (self.repository.url, self.hex), self.cache_file)
+			self.repository.downloader.onetime_get_request('%s/packages/%s.sdp' % (self.repository.url, self.hex), self.cache_file)
 
 	def get_files(self):
 		""" Download .sdp file and return the list of files in it."""
@@ -406,7 +426,7 @@ class Package:
 
 		# Perform HTTP POST request and download and process the response.
 		url = '%s/streamer.cgi?%s' % (self.repository.url, self.hex)
-		with closing(self.repository.rapid.downloader.post(url, postdata)) as remote:
+		with closing(self.repository.downloader.post(url, postdata)) as remote:
 			if not remote.info().has_key('Content-Length'):
 				raise StreamerFormatException('Content-Length')
 
@@ -514,45 +534,38 @@ class TestRapid(unittest.TestCase):
 		# directories are created on demand instead of beforehand.
 		mkdir_p(pool_dir)
 
-		self.rapid = Rapid()
-
 		if True:   # False to use real Downloader, True to use MockDownloader
-			self.rapid.downloader = MockDownloader()
-			www = self.rapid.downloader.www
+			self.downloader = MockDownloader()
+			self.rapid = Rapid(self.downloader)
+			www = self.downloader.www
 			www[master_url] = gzip_string(',http://ts1,,\n')
 			www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,dependency,XTA 9.6\n,5678,,dependency\n')
 			www['http://ts1/packages/1234.sdp'] = gzip_string('\3foo' + binascii.unhexlify('d41d8cd98f00b204e9800998ecf8427e') + 8 * '\0')
 			www['http://ts1/packages/5678.sdp'] = gzip_string('')
 			www['http://ts1/streamer.cgi?1234'] = struct.pack('>L', len(gzip_string(''))) + gzip_string('')
+		else:
+			self.downloader = Downloader()
+			self.rapid = Rapid(self.downloader)
 
 	def tearDown(self):
 		shutil.rmtree(self.test_dir)
 
 	def test_get_repositories(self):
-		self.rapid.get_repositories()
-
-	def test_get_packages_by_name(self):
-		self.rapid.get_packages_by_name()
+		self.assertEqual(1, len(self.rapid.repositories()))
 
 	def test_get_package_by_name(self):
-		self.assertFalse(self.rapid.get_package_by_name('XXXXXX'))
-		self.assertTrue(self.rapid.get_package_by_name('XTA 9.6'))
-
-	def test_get_packages_by_tag(self):
-		self.rapid.get_packages_by_tag()
+		self.assertRaises(KeyError, lambda: self.rapid.packages()['XXXXXX'])
+		self.assertTrue(self.rapid.packages()['XTA 9.6'])
 
 	def test_get_package_by_tag(self):
-		self.assertFalse(self.rapid.get_package_by_tag('XXXXXX'))
-		self.assertTrue(self.rapid.get_package_by_tag('xta:latest'))
+		self.assertRaises(KeyError, lambda: self.rapid.packages()['XXXXXX'])
+		self.assertTrue(self.rapid.packages()['xta:latest'])
 
 	def test_get_packages(self):
-		self.rapid.get_packages()
+		self.assertEqual(2, len(self.rapid.packages()))
 
-	def test_get_installed_packages(self):
-		self.rapid.get_installed_packages()
-
-	def test_get_not_installed_packages(self):
-		self.rapid.get_not_installed_packages()
+	def test_get_tags(self):
+		self.assertEqual(set(['xta:latest']), self.rapid.tags())
 
 	def install(self, p):
 		for d in p.dependencies:
@@ -560,7 +573,7 @@ class TestRapid(unittest.TestCase):
 		p.install()
 
 	def test_install_uninstall(self):
-		p = self.rapid.get_package_by_tag('xta:latest')
+		p = self.rapid.packages()['xta:latest']
 		self.install(p)
 		self.assertFalse(p.get_missing_files())
 		self.assertTrue(os.path.exists(p.get_files()[0].get_pool_path()))
@@ -569,22 +582,22 @@ class TestRapid(unittest.TestCase):
 		self.assertFalse(os.path.exists(os.path.join(package_dir, '1234.sdp')))
 
 	def test_install_missing_dependency(self):
-		p = self.rapid.get_package_by_tag('xta:latest')
+		p = self.rapid.packages()['xta:latest']
 		self.assertRaises(DependencyException, lambda: p.install())
 		self.assertFalse(p.installed())   # install should have failed
 
 	def test_uninstall_dependency_check(self):
-		p = self.rapid.get_package_by_tag('xta:latest')
+		p = self.rapid.packages()['xta:latest']
 		self.install(p)
-		d = self.rapid.get_package_by_name('dependency')
+		d = self.rapid.packages()['dependency']
 		self.assertRaises(DependencyException, lambda: d.uninstall())
 		self.assertTrue(d.installed())   # uninstall should have failed
 
 	def test_detached_package(self):
-		self.rapid.get_packages_by_name()
+		self.rapid.packages().load()
 		self.setUp()   # re-initialise
-		self.rapid.downloader.www['http://ts1/versions.gz'] = gzip_string('')
-		p = self.rapid.get_package_by_name('dependency')
+		self.downloader.www['http://ts1/versions.gz'] = gzip_string('')
+		p = self.rapid.packages()['dependency']
 		self.assertFalse(p.repository)
 		self.assertFalse(hasattr(p, 'cache_file'))
 		self.assertFalse(p.available())
@@ -592,28 +605,26 @@ class TestRapid(unittest.TestCase):
 		self.assertRaises(DetachedPackageException, lambda: p.install())
 
 	def test_detached_package_repair(self):
-		self.rapid.get_packages_by_name()
-		self.rapid.get_package_by_name('dependency').get_files()
+		self.rapid.packages()['dependency'].get_files()
 		self.setUp()   # re-initialise
-		self.rapid.downloader.www['http://ts1/versions.gz'] = gzip_string('')
-		p = self.rapid.get_package_by_name('dependency')
+		self.downloader.www['http://ts1/versions.gz'] = gzip_string('')
+		p = self.rapid.packages()['dependency']
 		self.assertTrue(p.repository)
 		self.assertTrue(hasattr(p, 'cache_file'))
 		self.assertTrue(p.available())
 		p.get_files()
 
 	def test_disappeared_repo_sdp_cached(self):
-		self.rapid.get_packages_by_name()
-		self.rapid.get_package_by_tag('xta:latest').get_files()
+		self.rapid.packages()['xta:latest'].get_files()
 		self.setUp()   # re-initialise
-		self.rapid.downloader.www[master_url] = gzip_string('')
-		self.rapid.get_package_by_tag('xta:latest').get_files()
+		self.downloader.www[master_url] = gzip_string('')
+		self.rapid.packages()['xta:latest'].get_files()
 
 	def test_disappeared_repo_sdp_not_cached(self):
-		self.rapid.get_packages_by_name()
+		self.rapid.packages().load()
 		self.setUp()   # re-initialise
-		self.rapid.downloader.www[master_url] = gzip_string('')
-		p = self.rapid.get_package_by_tag('xta:latest')
+		self.downloader.www[master_url] = gzip_string('')
+		p = self.rapid.packages()['xta:latest']
 		self.assertRaises(OfflineRepositoryException, lambda: p.get_files())
 
 if __name__ == '__main__':
