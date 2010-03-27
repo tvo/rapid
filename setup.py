@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='rapid-spring',
-    version='0.1.2',
+    version='0.1.3',
     author='Tobi Vollebregt',
     author_email='tobivollebregt@gmail.com',
     packages=['rapid'],
