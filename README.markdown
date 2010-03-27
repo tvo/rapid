@@ -3,6 +3,18 @@
  * Python (tested on 2.6.2)
  * [python-bitarray](http://pypi.python.org/pypi/bitarray/0.3.2) (easy_install bitarray)
 
+# Installation
+
+## Linux
+
+You can use *easy_install* to get the package from the [Python Package Index](http://pypi.python.org/pypi/rapid-spring/).
+
+    easy_install rapid-spring
+
+If you do not have the script *easy_install* available then use your distribution's package manager to install the python-setuptools (or similar) package.
+
+    apt-get install python-setuptools      # Debian/Ubuntu
+    yum install python-setuptools-devel    # Fedora
 
 # Usage
 
