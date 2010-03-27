@@ -145,7 +145,7 @@ def uninstall_single_plus_revdeps(p, dep = False):
 
 def uninstall(searchterm):
 	""" Uninstall all packages matching searchterm."""
-	for name in select('name', searchterm, [p.name for p in rapid.get_installed_packages()]):
+	for name in select('name', searchterm, [p.name for p in rapid.packages() if p.installed()]):
 		uninstall_single(rapid.packages()[name])
 
 
