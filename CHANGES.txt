@@ -1,3 +1,4 @@
+v0.1.7, 2010-03-27 -- added make-sdd command and fixed uninstall
 v0.1.6, 2010-03-27 -- attempt to add missing dependency on bitarray to the package
 v0.1.5, 2010-03-27 -- attempt to add missing dependency on bitarray to the package
 v0.1.4, 2010-03-27 -- attempt to add missing dependency on bitarray to the package
