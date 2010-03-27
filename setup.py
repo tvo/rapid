@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='rapid-spring',
-    version='0.1.5',
+    version='0.1.6',
     author='Tobi Vollebregt',
     author_email='tobivollebregt@gmail.com',
     packages=['rapid'],
@@ -12,5 +12,5 @@ setup(
     license='LICENSE.txt',
     description='spring content downloading',
     long_description=open('README.txt').read(),
-    requires=['bitarray'],
+    install_requires=['bitarray'],
 )
