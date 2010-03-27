@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2010 Tobi Vollebregt
 
+from contextlib import closing
 from ConfigParser import RawConfigParser as ConfigParser
 from progressbar import ProgressBar
 import rapid
-import getopt, os, sys
+import getopt, gzip, os, sys
 
 
 def usage():
@@ -23,6 +24,7 @@ Where verb is one of:
  * list-installed-packages: Idem, but only installed packages.
  * uninstall-unpinned: Keep only the pinned tags and all dependencies.
  * collect-pool: Remove pool files not needed by any installed package.
+ * make-sdd: Extract pool files into a .sdd archive.
 
 Examples:
 %(progname)s pin xta:latest           # installs latest XTA
@@ -33,6 +35,7 @@ Examples:
 
 
 #  Create rapid module.
+spring_dir = rapid.spring_dir
 pool_dir = rapid.pool_dir
 rapid = rapid.Rapid()
 
@@ -249,12 +252,48 @@ def collect_pool():
 	print '%.2f megabytes / %d files deleted from the pool.' % (size / (1024.*1024.), count)
 
 
+def make_sdd(package, path):
+	""" Extract all files for a single package from the pool and put them in
+	    a newly created .sdd package."""
+	if package not in rapid.packages():
+		print 'Package %s not known' % package
+		return
+	package = rapid.packages()[package]
+	if not os.path.exists(os.path.dirname(path)):
+		path = os.path.join(spring_dir, 'mods', path)
+	if os.path.exists(path):
+		print '%s already exists' % path
+		return
+
+	missing_files = package.get_missing_files()
+	if missing_files:
+		print 'Downloading %d missing files for: %s' % (len(missing_files), package.name)
+		package.download_files(missing_files, ProgressBar())
+		print
+
+	files = package.get_files()
+	print 'Extracting %d files into: %s' % (len(files), path)
+	progress = ProgressBar(maxValue = len(files))
+	for f in files:
+		target_name = os.path.join(path, f.name)
+		if not os.path.exists(os.path.dirname(target_name)):
+			os.makedirs(os.path.dirname(target_name))
+		with closing(gzip.open(f.get_pool_path(), 'rb')) as source:
+			with closing(open(target_name, 'wb')) as target:
+				target.write(source.read())
+		progress(1)
+	print
+
+
+where = [2]
+
 def req_arg():
-	if len(sys.argv) < 3:
-		print 'Not enough arguments to operation: ' + verb
+	if len(sys.argv) <= where[0]:
+		print 'Not enough arguments to operation.'
 		print
 		usage()
-	return sys.argv[2]
+	where[0] += 1
+	return sys.argv[where[0] - 1]
 
 def opt_arg():
 	if len(sys.argv) > 2:

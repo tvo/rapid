@@ -48,5 +48,4 @@ Where *verb* is one of:
 
 # Feature suggestions
 
- * make-sdd command to easily create a modifiable copy of a package (for engine development)
- * make-sdz command could then be useful too
+ * make-sdz command (similar to make-sdd) could be useful

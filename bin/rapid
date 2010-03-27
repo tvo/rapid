@@ -37,6 +37,8 @@ if __name__ == '__main__':
 		uninstall_unpinned()
 	elif verb == 'collect-pool':
 		collect_pool()
+	elif verb == 'make-sdd':
+		make_sdd(req_arg(), req_arg())
 	else:
 		print 'Unknown operation: ' + verb
 		print
