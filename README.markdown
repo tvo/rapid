@@ -3,10 +3,6 @@
  * Python (tested on 2.6.2)
  * [python-bitarray](http://pypi.python.org/pypi/bitarray/0.3.2) (easy_install bitarray)
 
-For development:
-
- * [pandoc](http://johnmacfarlane.net/pandoc/) (only needed to make a release!)
-
 # Installation
 
 ## Linux

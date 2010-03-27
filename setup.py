@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 from distutils.core import setup
-import os, sys
-
-if 0 != os.system('pandoc -f markdown -t rst README.markdown -o README.txt'):
-	print
-	print 'Do you have pandoc installed?'
-	print 'http://johnmacfarlane.net/pandoc/'
-	print
-	sys.exit(1)
 
 setup(
     name='rapid-spring',
