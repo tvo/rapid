@@ -21,7 +21,8 @@ Where *verb* is one of:
  * list-pinned-tags: Idem, but only pinned tags.
  * list-packages: List all packages whose name contains *argument*.
  * list-installed-packages: Idem, but only installed packages.
- * collect-garbage: Keep only the pinned tags and all dependencies.
+ * uninstall-unpinned: Keep only the pinned tags and all dependencies.
+ * collect-pool: Remove pool files not needed by any installed package.
 
 Examples:
 ----------------
