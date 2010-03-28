@@ -1,0 +1,34 @@
+Source: rapid-spring
+Maintainer: Tobi Vollebregt <tobivollebregt@gmail.com>
+Section: python
+Priority: optional
+Build-Depends: debhelper (>= 7), python-support (>= 0.8.4)
+Standards-Version: 3.7.2
+XS-Python-Version: current
+
+Package: python-rapid-spring
+Architecture: all
+Depends: ${python:Depends}
+XB-Python-Version: ${python:Versions}
+Provides: ${python:Provides}
+Description: spring content downloading
+ Requirements
+ ============
+ .
+ .
+ -  Python (tested on 2.6.2)
+ -  `python-bitarray <http://pypi.python.org/pypi/bitarray/0.3.2>`_
+    (easy\_install bitarray)
+ .
+ Installation
+ ============
+ .
+ Linux
+ -----
+ .
+ You can use *easy\_install* to get the package from the
+ `Python Package Index <http://pypi.python.org/pypi/rapid-spring/>`_.
+ .
+ ::
+ .
+     easy_install rapid-spring
