@@ -12,5 +12,5 @@ setup(
     license='LICENSE.txt',
     description='spring content downloading',
     long_description=open('README.txt').read(),
-    install_requires=['bitarray','pyqt'],
+    install_requires=['bitarray'],
 )
