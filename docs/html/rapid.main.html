@@ -1,0 +1,67 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module main</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>main</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/share/projekte/spring/rapid/rapid/main.py">/share/projekte/spring/rapid/rapid/main.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;-*-&nbsp;coding:&nbsp;utf-8&nbsp;-*-<br>
+#&nbsp;Copyright&nbsp;(C)&nbsp;2010&nbsp;Tobi&nbsp;Vollebregt</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="getopt.html">getopt</a><br>
+</td><td width="25%" valign=top><a href="gzip.html">gzip</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-collect_pool"><strong>collect_pool</strong></a>()</dt><dd><tt>Simple&nbsp;mark&nbsp;and&nbsp;sweep&nbsp;garbage&nbsp;collector.&nbsp;The&nbsp;root&nbsp;set&nbsp;consists&nbsp;of&nbsp;the<br>
+installed&nbsp;packages.&nbsp;This&nbsp;touches&nbsp;only&nbsp;pool&nbsp;files.</tt></dd></dl>
+ <dl><dt><a name="-install"><strong>install</strong></a>(searchterm)</dt><dd><tt>Install&nbsp;all&nbsp;packages&nbsp;matching&nbsp;searchterm.</tt></dd></dl>
+ <dl><dt><a name="-install_single"><strong>install_single</strong></a>(p, dep<font color="#909090">=False</font>)</dt><dd><tt>Install&nbsp;a&nbsp;single&nbsp;package&nbsp;and&nbsp;its&nbsp;dependencies.</tt></dd></dl>
+ <dl><dt><a name="-list_packages"><strong>list_packages</strong></a>(searchterm, available)</dt><dd><tt>List&nbsp;all&nbsp;packages&nbsp;whose&nbsp;name&nbsp;matches&nbsp;searchterm.</tt></dd></dl>
+ <dl><dt><a name="-list_tags"><strong>list_tags</strong></a>(searchterm, available)</dt><dd><tt>List&nbsp;all&nbsp;tags&nbsp;which&nbsp;match&nbsp;searchterm.</tt></dd></dl>
+ <dl><dt><a name="-make_sdd"><strong>make_sdd</strong></a>(package, path)</dt><dd><tt>Extract&nbsp;all&nbsp;files&nbsp;for&nbsp;a&nbsp;single&nbsp;package&nbsp;from&nbsp;the&nbsp;pool&nbsp;and&nbsp;put&nbsp;them&nbsp;in<br>
+a&nbsp;newly&nbsp;created&nbsp;.sdd&nbsp;package.</tt></dd></dl>
+ <dl><dt><a name="-opt_arg"><strong>opt_arg</strong></a>()</dt></dl>
+ <dl><dt><a name="-pin"><strong>pin</strong></a>(searchterm)</dt><dd><tt>Pin&nbsp;all&nbsp;tags&nbsp;matching&nbsp;searchterm&nbsp;and&nbsp;install&nbsp;the&nbsp;corresponding&nbsp;packages.</tt></dd></dl>
+ <dl><dt><a name="-pin_single"><strong>pin_single</strong></a>(tag)</dt><dd><tt>Pin&nbsp;a&nbsp;tag.&nbsp;This&nbsp;means&nbsp;any&nbsp;package&nbsp;having&nbsp;this&nbsp;tag&nbsp;will&nbsp;automatically&nbsp;be<br>
+installed&nbsp;and&nbsp;upgraded.</tt></dd></dl>
+ <dl><dt><a name="-req_arg"><strong>req_arg</strong></a>()</dt></dl>
+ <dl><dt><a name="-select"><strong>select</strong></a>(noun, needle, haystack)</dt></dl>
+ <dl><dt><a name="-uninstall"><strong>uninstall</strong></a>(searchterm)</dt><dd><tt>Uninstall&nbsp;all&nbsp;packages&nbsp;matching&nbsp;searchterm.</tt></dd></dl>
+ <dl><dt><a name="-uninstall_single"><strong>uninstall_single</strong></a>(p)</dt><dd><tt>Uninstall&nbsp;and&nbsp;unpin&nbsp;a&nbsp;single&nbsp;package.&nbsp;Does&nbsp;not&nbsp;uninstall&nbsp;dependencies.</tt></dd></dl>
+ <dl><dt><a name="-uninstall_single_plus_revdeps"><strong>uninstall_single_plus_revdeps</strong></a>(p, dep<font color="#909090">=False</font>)</dt><dd><tt>Uninstall&nbsp;and&nbsp;unpin&nbsp;a&nbsp;package&nbsp;and&nbsp;all&nbsp;packages&nbsp;that&nbsp;depend&nbsp;on&nbsp;it.</tt></dd></dl>
+ <dl><dt><a name="-uninstall_unpinned"><strong>uninstall_unpinned</strong></a>()</dt><dd><tt>Simple&nbsp;mark&nbsp;and&nbsp;sweep&nbsp;garbage&nbsp;collector.&nbsp;The&nbsp;root&nbsp;set&nbsp;consists&nbsp;of&nbsp;the<br>
+pinned&nbsp;tags.&nbsp;This&nbsp;does&nbsp;not&nbsp;touch&nbsp;pool&nbsp;files.</tt></dd></dl>
+ <dl><dt><a name="-unpin"><strong>unpin</strong></a>(searchterm)</dt><dd><tt>Unpin&nbsp;all&nbsp;tags&nbsp;matching&nbsp;searchterm.</tt></dd></dl>
+ <dl><dt><a name="-unpin_single"><strong>unpin_single</strong></a>(tag)</dt><dd><tt>Unpin&nbsp;a&nbsp;tag.&nbsp;This&nbsp;means&nbsp;packages&nbsp;having&nbsp;this&nbsp;tag&nbsp;will&nbsp;not&nbsp;be<br>
+automatically&nbsp;upgraded&nbsp;anymore.&nbsp;Does&nbsp;not&nbsp;uninstall&nbsp;anything.</tt></dd></dl>
+ <dl><dt><a name="-upgrade"><strong>upgrade</strong></a>(searchterm)</dt><dd><tt>Upgrade&nbsp;installed&nbsp;tags&nbsp;which&nbsp;match&nbsp;searchterm.</tt></dd></dl>
+ <dl><dt><a name="-usage"><strong>usage</strong></a>()</dt></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>pool_dir</strong> = '/home/kosh/.spring/pool'<br>
+<strong>rapid</strong> = &lt;rapid.Rapid instance at 0xc1aa70&gt;<br>
+<strong>spring_dir</strong> = '/home/kosh/.spring'<br>
+<strong>where</strong> = [2]</td></tr></table>
+</body></html>
