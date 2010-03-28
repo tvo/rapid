@@ -1,3 +1,4 @@
+v0.1.10, 2010-03-29 -- removed pyqt dependency and added error message instead
 v0.1.9, 2010-03-29 -- added pyqt dependency, fixed some tiny bugs and refactored a bit
 v0.1.8, 2010-03-27 -- fix package
 v0.1.7, 2010-03-27 -- added make-sdd command and fixed uninstall
