@@ -156,29 +156,33 @@ def list_packages(searchterm, available):
 	""" List all packages whose name matches searchterm."""
 	s = searchterm.lower()
 	print 'Installed packages:'
-	for p in [p for p in rapid.packages() if p.installed() and s in p.name.lower()]:
-		print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
+	for p in rapid.packages():
+		if p.installed() and s in p.name.lower():
+			print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 	if available:
 		print 'Available packages:'
-		for p in [p for p in rapid.packages() if not p.installed() and s in p.name.lower()]:
-			print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
+		for p in rapid.packages():
+			if not p.installed() and s in p.name.lower():
+				print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 
 
 def list_tags(searchterm, available):
 	""" List all tags which match searchterm."""
 	s = searchterm.lower()
 	print 'Pinned tags:'
-	for tag in filter(lambda t: s in t.lower(), rapid.pinned_tags()):
-		p = rapid.packages()[tag]
-		if p:
-			print '  %-40s (%s)' % (tag, p.name)
-		else:
-			print '  %-40s [dangling tag]' % tag
+	for tag in rapid.pinned_tags():
+		if s in tag.lower():
+			p = rapid.packages()[tag]
+			if p:
+				print '  %-40s (%s)' % (tag, p.name)
+			else:
+				print '  %-40s [dangling tag]' % tag
 	if available:
 		print 'Available tags:'
-		for tag in (set(rapid.tags()) - set(rapid.pinned_tags())):
-			p = rapid.packages()[tag]
-			print '  %-40s (%s)' % (tag, p.name)
+		for tag in rapid.tags():
+			if s in tag.lower() and s not in rapid.pinned_tags():
+				p = rapid.packages()[tag]
+				print '  %-40s (%s)' % (tag, p.name)
 
 
 def upgrade(searchterm):
