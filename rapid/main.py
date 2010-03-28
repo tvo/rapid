@@ -203,6 +203,11 @@ def uninstall_unpinned():
 	# Build set of packages that will be removed.
 	garbage = set(set(p for p in rapid.packages() if p.installed()) - marked_packages)
 
+	# Anything to do?
+	if not garbage:
+		print 'Nothing to do.'
+		return
+
 	# Confirmation?
 	if (not raw_input('Uninstall %s? [y/N]: ' % ', '.join(p.name for p in garbage)).startswith('y')):
 		return
