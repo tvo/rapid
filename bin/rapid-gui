@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from rapid.gui import RapidGUI
-from PyQt4 import QtGui
+try:
+	from PyQt4 import QtGui
+except:
+	import os
+	os.system("xmessage 'This application requires PyQt4 to be installed.\n" +
+		"Please use your package manager to install PyQt4 and then run rapid-gui again.'")
 
 if __name__ == '__main__':
 	app = QtGui.QApplication(['RapidGUI'])
