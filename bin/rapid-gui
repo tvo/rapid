@@ -3,9 +3,6 @@
 
 import os, sys
 from PyQt4 import QtCore, QtGui
-
-# modify path so that development copy is picked up first, if available
-sys.path = [os.path.normpath(os.path.join(os.path.realpath(__file__), '..', '..'))] + sys.path
 from rapid import main, models
 
 
