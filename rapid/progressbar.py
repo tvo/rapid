@@ -73,11 +73,12 @@ class ProgressBar:
 		""" Increases the amount by value, and writes to stdout. Prints a
 		    carriage return first, so it will overwrite the current line in
 		    stdout."""
-		print '\r',
-		self.update_amount(self.amount + value)
-		sys.stdout.write(str(self))
-		sys.stdout.write("\r")
-		sys.stdout.flush()
+		if self.amount < self.max:
+			print '\r',
+			self.update_amount(self.amount + value)
+			sys.stdout.write(str(self))
+			sys.stdout.write(self.amount < self.max and "\r" or "\n")
+			sys.stdout.flush()
 
 	def setMaximum(self, value):
 		self.max = value
@@ -93,4 +94,3 @@ if __name__ == '__main__':
 		if i == 90:
 			p.max = 200
 		sleep(0.02)
-	print

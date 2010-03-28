@@ -109,7 +109,6 @@ def install_single(p, dep = False):
 		if not p.installed():
 			print ['Installing: ', 'Installing dependency: '][int(dep)] + p.name
 			p.install(ProgressBar())
-			print
 		elif not dep:
 			print 'Already installed: ' + p.name
 
@@ -273,7 +272,6 @@ def make_sdd(package, path):
 	if missing_files:
 		print 'Downloading %d missing files for: %s' % (len(missing_files), package.name)
 		package.download_files(missing_files, ProgressBar())
-		print
 
 	files = package.get_files()
 	print 'Extracting %d files into: %s' % (len(files), path)
@@ -286,7 +284,6 @@ def make_sdd(package, path):
 			with closing(open(target_name, 'wb')) as target:
 				target.write(source.read())
 		progress(1)
-	print
 
 
 where = [2]
