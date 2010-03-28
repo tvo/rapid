@@ -113,13 +113,13 @@ class RepositorySource:
 		# Collect OnlineRepositories
 		self.downloader.conditional_get_request(master_url, self.repos_gz)
 		with closing(gzip.open(self.repos_gz)) as f:
-			unique = set([x.split(',')[1] for x in f])
+			unique = set(x.split(',')[1] for x in f)
 			self.__repositories = [OnlineRepository(os.path.join(self.cache_dir, urlparse(x).netloc), self.downloader, x) for x in unique]
 
 		# Collect OfflineRepositories
 		for dirent in os.listdir(self.cache_dir):
 			path = os.path.join(self.cache_dir, dirent)
-			if os.path.isdir(path) and path not in [r.cache_dir for r in self.__repositories]:
+			if os.path.isdir(path) and path not in (r.cache_dir for r in self.__repositories):
 				self.__repositories.append(OfflineRepository(path))
 
 	def get_list(self):
@@ -191,7 +191,7 @@ class PackageSource:
 		# Resolve dependencies and calculate reverse dependencies.
 		# Dependencies missing in all repositories are silently discarded.
 		for p in self:
-			p.dependencies = set([self[name] for name in p.dependencies if name in self])
+			p.dependencies = set(self[name] for name in p.dependencies if name in self)
 			for d in p.dependencies:
 				d.reverse_dependencies.add(p)
 
@@ -207,11 +207,11 @@ class PackageSource:
 		# Create set of tags and mapping from tag to Package objects.
 		self.__tags = set()
 		for p in self:
-			self.__packages_dict.update([(t, p) for t in p.tags])
+			self.__packages_dict.update((t, p) for t in p.tags)
 			self.__tags.update(p.tags)
 
 		# Make __getitem__ idempotent.
-		self.__packages_dict.update([(p, p) for p in self])
+		self.__packages_dict.update((p, p) for p in self)
 
 	def get_list(self):
 		if not self.__packages_list: self.load()
@@ -250,7 +250,7 @@ class PinnedTags:
 		if not self.__config.has_section('tags'):
 			self.__config.add_section('tags')
 		if self.__config.has_option('tags', 'pinned'):
-			self.__pinned_tags = set([s for s in self.__config.get('tags', 'pinned').split(',') if s])
+			self.__pinned_tags = set(s for s in self.__config.get('tags', 'pinned').split(',') if s)
 
 	def write(self):
 		# Write configuration.

@@ -195,16 +195,16 @@ def uninstall_unpinned():
 	    pinned tags. This does not touch pool files."""
 	# Build set marked_packages that should be kept.
 	marked_packages = set()
-	new_packages = set([rapid.packages()[t] for t in rapid.pinned_tags() if t in rapid.tags()])
+	new_packages = set(rapid.packages()[t] for t in rapid.pinned_tags() if t in rapid.tags())
 	while new_packages:
 		marked_packages.update(new_packages)
 		new_packages = sum([list(p.dependencies) for p in new_packages], [])
 
 	# Build set of packages that will be removed.
-	garbage = set(set([p for p in rapid.packages() if p.installed()]) - marked_packages)
+	garbage = set(set(p for p in rapid.packages() if p.installed()) - marked_packages)
 
 	# Confirmation?
-	if (not raw_input('Uninstall %s? [y/N]: ' % ', '.join([p.name for p in garbage])).startswith('y')):
+	if (not raw_input('Uninstall %s? [y/N]: ' % ', '.join(p.name for p in garbage)).startswith('y')):
 		return
 
 	# Uninstall all garbage.
@@ -219,7 +219,7 @@ def collect_pool():
 	# Build set marked_files that should be kept.
 	installed_packages = [p for p in rapid.packages() if p.installed()]
 	marked_files = reduce(lambda x, y: x + y.get_files(), installed_packages, [])
-	marked_files = set([f.get_pool_path() for f in marked_files])
+	marked_files = set(f.get_pool_path() for f in marked_files)
 
 	def gc(really_remove):
 		# Remove all files not in marked_files.
