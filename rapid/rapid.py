@@ -7,8 +7,8 @@ from contextlib import closing
 from hashlib import md5
 from urlparse import urlparse
 from StringIO import StringIO
-import binascii, gzip, os, struct
-import ConfigParser
+import binascii, gzip, os, struct, weakref
+import ConfigParser 
 
 from downloader import Downloader, atomic_write
 
@@ -435,7 +435,7 @@ class Package:
 				size  = really_read(4, 'size')
 
 				size = struct.unpack('>L', size)[0]
-				self.__files.append(File(self, name, md5, crc32, size))
+				self.__files.append(FileFactory(name, md5, crc32, size))
 
 		return self.__files
 
@@ -554,9 +554,40 @@ class Package:
 
 ################################################################################
 
+def FileFactory(name, md5, crc32, size):
+	""" Factory participant of Flyweight pattern used to store huge amounts
+	    of Files without requiring extraordinate amounts of memory."""
+	# Get the physical path to the file in the pool.
+	hex = binascii.hexlify(md5)
+	pool_path = os.path.join(pool_dir, hex[:2], hex[2:]) + '.gz'
+
+	# pool_path identifies the pool file, but name may differ per package.
+	key = (pool_path, name)
+
+	# If we got it already, return flyweight File object.
+	if key in FileFactory.files:
+		f = FileFactory.files[key]
+		assert (f.pool_path == pool_path)
+		assert (f.name == name)
+		assert (f.md5 == md5)
+		assert (f.crc32 == crc32)
+		assert (f.size == size)
+		return f
+
+	# Use a local variable to ensure a strong ref exists until return!
+	f = File(pool_path, name, md5, crc32, size)
+	FileFactory.files[key] = f
+	return f
+
+FileFactory.files = weakref.WeakValueDictionary()
+
+################################################################################
+
 class File:
-	def __init__(self, package, name, md5, crc32, size):
-		self.package = package
+	""" Stores metadata about a pool file. Uses flyweight pattern to reduce
+	    memory consumption. (Many pool files may be shared between packages.)"""  
+	def __init__(self, pool_path, name, md5, crc32, size):
+		self.pool_path = pool_path
 		self.name = name
 		self.md5 = md5
 		self.crc32 = crc32
@@ -564,8 +595,7 @@ class File:
 
 	def get_pool_path(self):
 		""" Return the physical path to the file in the pool."""
-		md5 = binascii.hexlify(self.md5)
-		return os.path.join(pool_dir, md5[:2], md5[2:]) + '.gz'
+		return self.pool_path
 
 	def available(self):
 		""" Return true iff the file is available locally."""
