@@ -29,7 +29,9 @@ if __name__ == '__main__':
 	elif verb == 'list-pinned-tags':
 		list_tags(opt_arg(), False)
 	elif verb == 'update' or verb == 'upgrade':
-		upgrade(opt_arg())
+		upgrade()
+	elif verb == 'clean-update' or verb == 'clean-upgrade':
+		clean_upgrade()
 	elif verb == 'uninstall-unpinned':
 		uninstall_unpinned()
 	elif verb == 'collect-pool':

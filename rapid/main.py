@@ -13,7 +13,8 @@ def usage():
 	print """Usage: %(progname)s <verb> [<argument>]
 
 Where verb is one of:
- * update|upgrade: Install the latest package for all pinned tags.
+ * upgrade: Install the latest package for all pinned tags.
+ * clean-upgrade: Equivalent to 'upgrade' followed by 'uninstall-unpinned'. 
  * pin: Pins a tag and installs the latest package for that tag.
  * unpin: Unpins a tag. Does not uninstall any packages.
  * install: Install a package. Does not pin any tags.
@@ -27,9 +28,9 @@ Where verb is one of:
  * make-sdd: Extract pool files into a .sdd archive.
 
 Examples:
-%(progname)s pin xta:latest           # installs latest XTA
-%(progname)s pin 's44:latest mutator' # installs latest Spring: 1944
-%(progname)s upgrade                  # upgrade all pinned tags
+%(progname)s pin xta:latest   # installs latest XTA
+%(progname)s pin s44:latest   # installs latest Spring: 1944
+%(progname)s upgrade          # upgrade all pinned tags
 """ % {'progname': sys.argv[0]}
 	sys.exit(1)
 
@@ -184,10 +185,16 @@ def list_tags(searchterm, available):
 				print '  %-40s (%s)' % (tag, p.name)
 
 
-def upgrade(searchterm):
-	""" Upgrade installed tags which match searchterm."""
-	for tag in filter(lambda t: searchterm.lower() in t.lower(), rapid.pinned_tags()):
+def upgrade():
+	""" Upgrade pinned tags."""
+	for tag in rapid.pinned_tags():
 		install_single(rapid.packages()[tag])
+
+
+def clean_upgrade():
+	""" Upgrade pinned tags and uninstall unpinned packages."""
+	upgrade()
+	uninstall_unpinned()
 
 
 def uninstall_unpinned():
