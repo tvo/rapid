@@ -22,7 +22,8 @@ If you do not have the script *easy_install* available then use your distributio
 
 Where *verb* is one of:
 
- * update|upgrade: Install the latest package for all pinned tags.
+ * upgrade: Install the latest package for all pinned tags.
+ * clean-upgrade: Equivalent to 'upgrade' followed by 'uninstall-unpinned'. 
  * pin: Pins a tag and installs the latest package for that tag.
  * unpin: Unpins a tag. Does not uninstall any packages.
  * install: Install a package. Does not pin any tags.
@@ -33,12 +34,13 @@ Where *verb* is one of:
  * list-installed-packages: Idem, but only installed packages.
  * uninstall-unpinned: Keep only the pinned tags and all dependencies.
  * collect-pool: Remove pool files not needed by any installed package.
+ * make-sdd: Extract pool files into a .sdd archive.
 
-## Examples:
+Examples:
 
-    rapid pin xta:latest           # installs latest XTA
-    rapid pin 's44:latest mutator' # installs latest Spring: 1944
-    rapid upgrade                  # upgrade all pinned tags
+    rapid pin xta:latest   # installs latest XTA
+    rapid pin s44:latest   # installs latest Spring: 1944
+    rapid upgrade          # upgrade all pinned tags
 
 (the other commands are for advanced users mostly)
 
