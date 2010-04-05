@@ -100,7 +100,7 @@ class DependencyException(RapidException):
 
 ################################################################################
 
-class RepositorySource:
+class RepositorySource(object):
 	def __init__(self, cache_dir, downloader):
 		self.__repositories = None
 		self.cache_dir = cache_dir
@@ -141,7 +141,7 @@ class RepositorySource:
 
 ################################################################################
 
-class PackageSource:
+class PackageSource(object):
 	def __init__(self, cache_dir, repositories):
 		self.__packages_dict = None
 		self.__packages_list = None
@@ -245,7 +245,7 @@ class PackageSource:
 
 ################################################################################
 
-class PinnedTags:
+class PinnedTags(object):
 	def __init__(self):
 		self.__config_path = os.path.join(content_dir, 'main.cfg')
 		self.__config = ConfigParser.RawConfigParser()
@@ -292,7 +292,7 @@ class PinnedTags:
 
 ################################################################################
 
-class Rapid:
+class Rapid(object):
 	def __init__(self, downloader = None):
 		mkdir(spring_dir)
 		mkdir(content_dir)
@@ -326,7 +326,7 @@ class Rapid:
 
 ################################################################################
 
-class Repository:
+class Repository(object):
 	def __init__(self, cache_dir):
 		self.__packages = None
 		self.cache_dir = cache_dir
@@ -394,7 +394,7 @@ class OnlineRepository(Repository):
 
 ################################################################################
 
-class Package:
+class Package(object):
 	def __init__(self, hex, name, dependencies, tags = None, repository = None):
 		self.__files = None
 		self.hex = hex
@@ -599,7 +599,7 @@ FileFactory.files = weakref.WeakValueDictionary()
 
 ################################################################################
 
-class File:
+class File(object):
 	""" Stores metadata about a pool file. Uses flyweight pattern to reduce
 	    memory consumption. (Many pool files may be shared between packages.)"""  
 	def __init__(self, pool_path, name, md5, crc32, size):
