@@ -574,6 +574,7 @@ class File(object):
 	""" Stores metadata about a pool file. Uses flyweight pattern to reduce
 	    memory consumption. (Many pool files may be shared between packages.)"""
 
+	__slots__ = ['pool_path', 'name', 'md5', 'crc32', 'size', '__weakref__']
 	__files = weakref.WeakValueDictionary()
 
 	def __new__(cls, name, md5, crc32, size):
