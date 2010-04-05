@@ -72,33 +72,33 @@ def select(noun, needle, haystack):
 def pin_single(tag):
 	""" Pin a tag. This means any package having this tag will automatically be
 	    installed and upgraded."""
-	if not tag in rapid.pinned_tags():
+	if not tag in rapid.pinned_tags:
 		print 'Pinning: ' + tag
-		rapid.pinned_tags().add(tag)
+		rapid.pinned_tags.add(tag)
 	else:
 		print 'Already pinned: ' + tag
 
 
 def pin(searchterm):
 	""" Pin all tags matching searchterm and install the corresponding packages."""
-	for t in select('tag', searchterm, rapid.tags()):
+	for t in select('tag', searchterm, rapid.tags):
 		pin_single(t)
-		install_single(rapid.packages()[t])
+		install_single(rapid.packages[t])
 
 
 def unpin_single(tag):
 	""" Unpin a tag. This means packages having this tag will not be
 	    automatically upgraded anymore. Does not uninstall anything."""
-	if tag in rapid.pinned_tags():
+	if tag in rapid.pinned_tags:
 		print 'Unpinning: ' + tag
-		rapid.pinned_tags().remove(tag)
+		rapid.pinned_tags.remove(tag)
 	else:
 		print 'Not pinned: ' + tag
 
 
 def unpin(searchterm):
 	""" Unpin all tags matching searchterm."""
-	for t in select('pinned tag', searchterm, rapid.pinned_tags()):
+	for t in select('pinned tag', searchterm, rapid.pinned_tags):
 		unpin_single(t)
 
 
@@ -107,7 +107,7 @@ def install_single(p, dep = False):
 	if p:
 		for d in p.dependencies:
 			install_single(d, True)
-		if not p.installed():
+		if not p.installed:
 			print ['Installing: ', 'Installing dependency: '][int(dep)] + p.name
 			p.install(ProgressBar())
 		elif not dep:
@@ -116,14 +116,14 @@ def install_single(p, dep = False):
 
 def install(searchterm):
 	""" Install all packages matching searchterm."""
-	for name in select('name', searchterm, [p.name for p in rapid.packages()]):
-		install_single(rapid.packages()[name])
+	for name in select('name', searchterm, [p.name for p in rapid.packages]):
+		install_single(rapid.packages[name])
 
 
 def uninstall_single(p):
 	""" Uninstall and unpin a single package. Does not uninstall dependencies."""
 	if p:
-		if not p.can_be_uninstalled():
+		if not p.can_be_uninstalled:
 			print 'Can not uninstall because of dependencies: ' + p.name
 			return
 		for t in p.tags:
@@ -139,7 +139,7 @@ def uninstall_single_plus_revdeps(p, dep = False):
 			uninstall_single_plus_revdeps(d, True)
 		for t in p.tags:
 			unpin_single(t)
-		if p.installed():
+		if p.installed:
 			print ['Uninstalling: ', 'Uninstalling dependency: '][int(dep)] + p.name
 			p.uninstall()
 		elif not dep:
@@ -148,21 +148,21 @@ def uninstall_single_plus_revdeps(p, dep = False):
 
 def uninstall(searchterm):
 	""" Uninstall all packages matching searchterm."""
-	for name in select('name', searchterm, [p.name for p in rapid.packages() if p.installed()]):
-		uninstall_single(rapid.packages()[name])
+	for name in select('name', searchterm, [p.name for p in rapid.packages if p.installed]):
+		uninstall_single(rapid.packages[name])
 
 
 def list_packages(searchterm, available):
 	""" List all packages whose name matches searchterm."""
 	s = searchterm.lower()
 	print 'Installed packages:'
-	for p in rapid.packages():
-		if p.installed() and s in p.name.lower():
+	for p in rapid.packages:
+		if p.installed and s in p.name.lower():
 			print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 	if available:
 		print 'Available packages:'
-		for p in rapid.packages():
-			if not p.installed() and s in p.name.lower():
+		for p in rapid.packages:
+			if not p.installed and s in p.name.lower():
 				print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
 
 
@@ -170,25 +170,25 @@ def list_tags(searchterm, available):
 	""" List all tags which match searchterm."""
 	s = searchterm.lower()
 	print 'Pinned tags:'
-	for tag in rapid.pinned_tags():
+	for tag in rapid.pinned_tags:
 		if s in tag.lower():
-			p = rapid.packages()[tag]
+			p = rapid.packages[tag]
 			if p:
 				print '  %-40s (%s)' % (tag, p.name)
 			else:
 				print '  %-40s [dangling tag]' % tag
 	if available:
 		print 'Available tags:'
-		for tag in rapid.tags():
-			if s in tag.lower() and s not in rapid.pinned_tags():
-				p = rapid.packages()[tag]
+		for tag in rapid.tags:
+			if s in tag.lower() and s not in rapid.pinned_tags:
+				p = rapid.packages[tag]
 				print '  %-40s (%s)' % (tag, p.name)
 
 
 def upgrade():
 	""" Upgrade pinned tags."""
-	for tag in rapid.pinned_tags():
-		install_single(rapid.packages()[tag])
+	for tag in rapid.pinned_tags:
+		install_single(rapid.packages[tag])
 
 
 def clean_upgrade():
@@ -202,13 +202,13 @@ def uninstall_unpinned():
 	    pinned tags. This does not touch pool files."""
 	# Build set marked_packages that should be kept.
 	marked_packages = set()
-	new_packages = set(rapid.packages()[t] for t in rapid.pinned_tags() if t in rapid.tags())
+	new_packages = set(rapid.packages[t] for t in rapid.pinned_tags if t in rapid.tags)
 	while new_packages:
 		marked_packages.update(new_packages)
 		new_packages = sum([list(p.dependencies) for p in new_packages], [])
 
 	# Build set of packages that will be removed.
-	garbage = set(set(p for p in rapid.packages() if p.installed()) - marked_packages)
+	garbage = set(set(p for p in rapid.packages if p.installed) - marked_packages)
 
 	# Anything to do?
 	if not garbage:
@@ -221,7 +221,7 @@ def uninstall_unpinned():
 
 	# Uninstall all garbage.
 	for p in garbage:
-		if p.installed():
+		if p.installed:
 			uninstall_single_plus_revdeps(p)
 
 
@@ -229,9 +229,9 @@ def collect_pool():
 	""" Simple mark and sweep garbage collector. The root set consists of the
 	    installed packages. This touches only pool files."""
 	# Build set marked_files that should be kept.
-	installed_packages = [p for p in rapid.packages() if p.installed()]
-	marked_files = reduce(lambda x, y: x + y.get_files(), installed_packages, [])
-	marked_files = set(f.get_pool_path() for f in marked_files)
+	installed_packages = [p for p in rapid.packages if p.installed]
+	marked_files = reduce(lambda x, y: x + y.files, installed_packages, [])
+	marked_files = set(f.pool_path for f in marked_files)
 
 	def gc(really_remove):
 		# Remove all files not in marked_files.
@@ -270,29 +270,29 @@ def collect_pool():
 def make_sdd(package, path):
 	""" Extract all files for a single package from the pool and put them in
 	    a newly created .sdd package."""
-	if package not in rapid.packages():
+	if package not in rapid.packages:
 		print 'Package %s not known' % package
 		return
-	package = rapid.packages()[package]
+	package = rapid.packages[package]
 	if not os.path.exists(os.path.dirname(path)):
 		path = os.path.join(spring_dir, 'mods', path)
 	if os.path.exists(path):
 		print '%s already exists' % path
 		return
 
-	missing_files = package.get_missing_files()
+	missing_files = package.missing_files
 	if missing_files:
 		print 'Downloading %d missing files for: %s' % (len(missing_files), package.name)
 		package.download_files(missing_files, ProgressBar())
 
-	files = package.get_files()
+	files = package.files
 	print 'Extracting %d files into: %s' % (len(files), path)
 	progress = ProgressBar(maxValue = len(files))
 	for f in files:
 		target_name = os.path.join(path, f.name)
 		if not os.path.exists(os.path.dirname(target_name)):
 			os.makedirs(os.path.dirname(target_name))
-		with closing(gzip.open(f.get_pool_path(), 'rb')) as source:
+		with closing(gzip.open(f.pool_path, 'rb')) as source:
 			with closing(open(target_name, 'wb')) as target:
 				target.write(source.read())
 		progress(1)

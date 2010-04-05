@@ -15,7 +15,7 @@ class BaseRapidModel(QtGui.QStandardItemModel):
 		self.setHeaderData(0, QtCore.Qt.Horizontal, "Name")
 		self.setHeaderData(1, QtCore.Qt.Horizontal, "Tags")
 		i = 0
-		for p in filter( dataFunction, main.rapid.packages() ):
+		for p in filter( dataFunction, main.rapid.packages ):
 			self.insertRow(i)
 			self.setData(self.index(i, 0), p.name)
 			self.setData(self.index(i, 1), ', '.join(p.tags))
@@ -26,11 +26,11 @@ class AvailableRapidModel(BaseRapidModel):
 		super(AvailableRapidModel, self).__init__(parent)
 
 	def reload(self):
-		self.reloadData( lambda p: not p.installed() )
+		self.reloadData( lambda p: not p.installed )
 
 class InstalledRapidModel(BaseRapidModel):
 	def __init__(self,parent):
 		super(InstalledRapidModel, self).__init__(parent)
 
 	def reload(self):
-		self.reloadData( lambda p: p.installed() )
+		self.reloadData( lambda p: p.installed )

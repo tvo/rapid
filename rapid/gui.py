@@ -31,7 +31,7 @@ class DownloadThread(QtCore.QThread):
 		""" Install a single package and its dependencies."""
 		for d in p.dependencies:
 			self.install_single(d, True)
-		if not p.installed():
+		if not p.installed:
 			print ['Installing: ', 'Installing dependency: '][int(dep)] + p.name
 			p.install(self)
 			print
@@ -51,9 +51,9 @@ class DownloadThread(QtCore.QThread):
 	def run(self):
 		#FIXME: we get multiple tags. Which do we choose?
 		try:
-			p = main.rapid.packages()[self.tag_or_name.split(',')[0]]
+			p = main.rapid.packages[self.tag_or_name.split(',')[0]]
 		except KeyError:
-			p = main.rapid.packages()[self.tag_or_name]
+			p = main.rapid.packages[self.tag_or_name]
 		self.install_single(p)
 		self.emit( QtCore.SIGNAL("downloadComplete") )
 
