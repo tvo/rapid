@@ -51,3 +51,6 @@ Examples:
 # Feature suggestions
 
  * make-sdz command (similar to make-sdd) could be useful
+ * Improve the GUI (`rapid-gui`)
+ * Support alternative Spring data directory location
+  
