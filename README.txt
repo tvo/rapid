@@ -17,7 +17,7 @@ You can use *easy\_install* to get the package from the
 
 ::
 
-    easy_install rapid-spring
+    easy_install -U rapid-spring
 
 If you do not have the script *easy\_install* available then use
 your distribution's package manager to install the

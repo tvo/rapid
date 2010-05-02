@@ -9,7 +9,7 @@
 
 You can use *easy_install* to get the package from the [Python Package Index](http://pypi.python.org/pypi/rapid-spring/).
 
-    easy_install rapid-spring
+    easy_install -U rapid-spring
 
 If you do not have the script *easy_install* available then use your distribution's package manager to install the python-setuptools (or similar) package.
 
