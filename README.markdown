@@ -46,7 +46,7 @@ Examples:
 
 # Bugs/quirks
 
- * No known bugs/quirks
+ * `~/.spring/packages` isn't scanned. This means that packages which have been installed using a different tool (e.g. SpringDownloader.exe) and were removed from the server (I don't think that ever happens now) before rapid was ever started, will not be picked up by rapid. As such, they can not be uninstalled, don't appear in listings, and collect-gc may even break them by removing their pool files.
 
 # Feature suggestions
 
