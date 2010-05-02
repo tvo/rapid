@@ -99,7 +99,7 @@ class AvailableRapidListWidget(RapidListWidgetBase):
 		item = self.sourceModel.itemFromIndex( self.proxyModel.mapToSource( modelIndex ) )
 		tag = str(item.text())
 		print 'downloading ',tag
-		self.dl = DownloadDialog(window,tag)
+		self.dl = DownloadDialog(self.parent,tag)
 		self.dl.show()
 		self.connect( self.dl.dt, QtCore.SIGNAL("downloadComplete"), self.parent.reload, QtCore.Qt.QueuedConnection )
 
