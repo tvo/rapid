@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Requirements &mdash; rapid-spring v0.2.0 documentation</title>
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="rapid-spring v0.2.0 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to rapid-spring’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to rapid-spring’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">rapid-spring v0.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="requirements">
+<h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>Python (tested on 2.6.2)</li>
+<li><a class="reference external" href="http://pypi.python.org/pypi/bitarray/0.3.2">python-bitarray</a>
+(easy_install bitarray)</li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="linux">
+<h2>Linux<a class="headerlink" href="#linux" title="Permalink to this headline">¶</a></h2>
+<p>You can use <em>easy_install</em> to get the package from the
+<a class="reference external" href="http://pypi.python.org/pypi/rapid-spring/">Python Package Index</a>.</p>
+<div class="highlight-python"><pre>easy_install -U rapid-spring</pre>
+</div>
+<p>If you do not have the script <em>easy_install</em> available then use
+your distribution&#8217;s package manager to install the
+python-setuptools (or similar) package.</p>
+<div class="highlight-python"><pre>apt-get install python-setuptools      # Debian/Ubuntu
+yum install python-setuptools-devel    # Fedora</pre>
+</div>
+</div>
+</div>
+<div class="section" id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rapid</span> <span class="o">&lt;</span><span class="n">verb</span><span class="o">&gt;</span> <span class="p">[</span><span class="n">arguments</span><span class="o">...</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Where the different verbs and their arguments are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">upgrade</span></tt>: Install the latest package for all pinned tags.</li>
+<li><tt class="docutils literal"><span class="pre">clean-upgrade</span></tt>: Equivalent to &#8216;upgrade&#8217; followed by
+&#8216;uninstall-unpinned&#8217;.</li>
+<li><tt class="docutils literal"><span class="pre">pin</span> <span class="pre">&lt;tag&gt;</span></tt>: Pins a tag and installs the latest package for
+that tag.</li>
+<li><tt class="docutils literal"><span class="pre">unpin</span> <span class="pre">&lt;tag&gt;</span></tt>: Unpins a tag. Does not uninstall any packages.</li>
+<li><tt class="docutils literal"><span class="pre">install</span> <span class="pre">&lt;package&gt;</span></tt>: Install a package. Does not pin any tags.</li>
+<li><tt class="docutils literal"><span class="pre">uninstall</span> <span class="pre">&lt;package&gt;</span></tt>: Uninstall a package. Unpin its tag if
+any.</li>
+<li><tt class="docutils literal"><span class="pre">list-tags</span> <span class="pre">[tag]</span></tt>: List all tags that match <em>tag</em>.</li>
+<li><tt class="docutils literal"><span class="pre">list-pinned-tags</span> <span class="pre">[tag]</span></tt>: Idem, but only pinned tags.</li>
+<li><tt class="docutils literal"><span class="pre">list-packages</span> <span class="pre">[package]</span></tt>: List all packages whose name
+contains <em>argument</em>.</li>
+<li><tt class="docutils literal"><span class="pre">list-installed-packages</span> <span class="pre">[package]</span></tt>: Idem, but only installed
+packages.</li>
+<li><tt class="docutils literal"><span class="pre">uninstall-unpinned</span></tt>: Keep only the pinned tags and all
+dependencies. Uninstall all other packages.</li>
+<li><tt class="docutils literal"><span class="pre">collect-pool</span></tt>: Remove pool files not needed by any installed
+package.</li>
+<li><tt class="docutils literal"><span class="pre">make-sdd</span> <span class="pre">&lt;tag|package&gt;</span> <span class="pre">&lt;dir&gt;</span></tt>: Extract pool files of a
+package into <tt class="docutils literal"><span class="pre">~/.spring/mods/&lt;dir&gt;</span></tt>.</li>
+</ul>
+<p>Usually when a verb has a tag or a package as argument, an exact
+match is not required. The <tt class="docutils literal"><span class="pre">list-*</span></tt> commands will list all
+packages/tags that contain the given string and other commands will
+ask you to disambiguate when multiple matching packages/tags were
+found.</p>
+<p>Examples:</p>
+<div class="highlight-python"><pre>rapid pin xta:latest   # installs latest XTA
+rapid pin s44:latest   # installs latest Spring: 1944
+rapid upgrade          # upgrade all pinned tags</pre>
+</div>
+<p>(the other commands are for advanced users mostly)</p>
+</div>
+<div class="section" id="bugs-quirks">
+<h1>Bugs/quirks<a class="headerlink" href="#bugs-quirks" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">~/.spring/packages</span></tt> isn&#8217;t scanned. This means that packages
+which have been installed using a different tool (e.g.
+SpringDownloader.exe) and were removed from the server (I don&#8217;t
+think that ever happens now) before rapid was ever started, will
+not be picked up by rapid. As such, they can not be uninstalled,
+don&#8217;t appear in listings, and collect-gc may even break them by
+removing their pool files.</li>
+</ul>
+</div>
+<div class="section" id="feature-suggestions">
+<h1>Feature suggestions<a class="headerlink" href="#feature-suggestions" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>make-sdz command (similar to make-sdd) could be useful</li>
+<li>Improve the GUI (<tt class="docutils literal"><span class="pre">rapid-gui</span></tt>)</li>
+<li>Support alternative Spring data directory location</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">Requirements</a></li>
+<li><a class="reference external" href="#installation">Installation</a><ul>
+<li><a class="reference external" href="#linux">Linux</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#usage">Usage</a></li>
+<li><a class="reference external" href="#bugs-quirks">Bugs/quirks</a></li>
+<li><a class="reference external" href="#feature-suggestions">Feature suggestions</a></li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="index.html"
+                                  title="previous chapter">Welcome to rapid-spring&#8217;s documentation!</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="sources/README.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to rapid-spring’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">rapid-spring v0.2.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, Tobi Vollebregt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>
