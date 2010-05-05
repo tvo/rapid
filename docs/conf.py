@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # rapid-spring documentation build configuration file, created by
-# sphinx-quickstart on Mon May  3 23:25:00 2010.
+# sphinx-quickstart on Wed May  5 09:47:26 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -16,13 +16,14 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.append(os.path.abspath('.'))
+# Prepend, to make development copy take precedence over system-wide copy.
+sys.path = [os.path.abspath('..')] + sys.path
 
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = []
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

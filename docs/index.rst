@@ -1,5 +1,5 @@
 .. rapid-spring documentation master file, created by
-   sphinx-quickstart on Mon May  3 23:25:00 2010.
+   sphinx-quickstart on Wed May  5 09:47:26 2010.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -9,9 +9,11 @@ Welcome to rapid-spring's documentation!
 Contents:
 
 .. toctree::
-	:maxdepth: 2
+   :maxdepth: 2
 
-	README.rst
+   README.rst
+
+.. automodule:: rapid
 
 Indices and tables
 ==================
