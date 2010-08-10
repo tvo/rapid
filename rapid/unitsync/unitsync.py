@@ -10,7 +10,7 @@ class MapInfo(Structure):
 	def __init__(self):
 		self.author = cast(create_string_buffer(200), c_char_p) # BUG: author field shows up as empty, probably something to do with the fact it's after the startpos structs
 		self.description = cast(create_string_buffer(255), c_char_p)
-		
+
 	_fields_ = [('description', c_char_p),
 			('tidalStrength', c_int),
 			('gravity', c_int),
@@ -25,10 +25,10 @@ class MapInfo(Structure):
 			('author', c_char_p)]
 
 class Unitsync:
-	def __init__(self, location='.'):
+	def __init__(self, location):
 		if location.endswith('.so'):
 			self.unitsync = ctypes.cdll.LoadLibrary(location)
-		elif location.endswith('.dll'): 
+		elif location.endswith('.dll'):
 			locationdir = os.path.dirname(location)
 			# load devil first, to avoid dll conflicts
 			ctypes.windll.LoadLibrary(locationdir + "/devil.dll" )
@@ -48,17 +48,32 @@ class Unitsync:
 		self.unitsync.GetFullUnitName.restype = c_char_p
 		self.unitsync.GetArchiveChecksum.restype = c_uint
 		self.unitsync.GetArchivePath.restype = c_char_p
-		self.unitsync.GetMapCount.restype = c_int
-		self.unitsync.GetMapName.restype = c_char_p
 		self.unitsync.GetMapInfoEx.restype = c_int
 		self.unitsync.GetMapInfo.restype = c_int
+		self.unitsync.GetMapCount.restype = c_int
+		self.unitsync.GetMapName.restype = c_char_p
+		self.unitsync.GetMapDescription.restype = c_char_p
+		self.unitsync.GetMapAuthor.restype = c_char_p
+		self.unitsync.GetMapWidth.restype = c_int
+		self.unitsync.GetMapHeight.restype = c_int
+		self.unitsync.GetMapTidalStrength.restype = c_int
+		self.unitsync.GetMapWindMin.restype = c_int
+		self.unitsync.GetMapWindMax.restype = c_int
+		self.unitsync.GetMapGravity.restype = c_int
+		self.unitsync.GetMapResourceCount.restype = c_int
+		self.unitsync.GetMapResourceName.restype = c_char_p
+		self.unitsync.GetMapResourceMax.restype = c_float
+		self.unitsync.GetMapResourceExtractorRadius.restype = c_int
+		self.unitsync.GetMapPosCount.restype = c_int
+		self.unitsync.GetMapPosX.restype = c_float
+		self.unitsync.GetMapPosZ.restype = c_float
 		self.unitsync.GetMapMinHeight.restype = c_float
 		self.unitsync.GetMapMaxHeight.restype = c_float
 		self.unitsync.GetMapArchiveCount.restype = c_int
 		self.unitsync.GetMapArchiveName.restype = c_char_p
 		self.unitsync.GetMapChecksum.restype = c_uint
 		self.unitsync.GetMapChecksumFromName.restype = c_uint
-		self.unitsync.GetMinimap.restype = c_char_p
+		self.unitsync.GetMinimap.restype = pointer
 		self.unitsync.GetInfoMapSize.restype = c_int
 		self.unitsync.GetInfoMap.restype = c_int
 		self.unitsync.GetSkirmishAICount.restype = c_int
@@ -166,10 +181,25 @@ class Unitsync:
 	def RemoveAllArchives(self): return self.unitsync.RemoveAllArchives()
 	def GetArchiveChecksum(self, arname): return self.unitsync.GetArchiveChecksum(arname)
 	def GetArchivePath(self, arname): return self.unitsync.GetArchivePath(arname)
-	def GetMapCount(self): return self.unitsync.GetMapCount()
-	def GetMapName(self, index): return self.unitsync.GetMapName(index)
 	def GetMapInfoEx(self, name, outInfo, version): return self.unitsync.GetMapInfoEx(name, pointer(outInfo), version)
 	def GetMapInfo(self, name, outInfo): return self.unitsync.GetMapInfo(name, pointer(outInfo))
+	def GetMapCount(self): return self.unitsync.GetMapCount()
+	def GetMapName(self, index): return self.unitsync.GetMapName(index)
+	def GetMapDescription(self, index): return self.unitsync.GetMapDescription(index)
+	def GetMapAuthor(self, index): return self.unitsync.GetMapAuthor(index)
+	def GetMapWidth(self, index): return self.unitsync.GetMapWidth(index)
+	def GetMapHeight(self, index): return self.unitsync.GetMapHeight(index)
+	def GetMapTidalStrength(self, index): return self.unitsync.GetMapTidalStrength(index)
+	def GetMapWindMin(self, index): return self.unitsync.GetMapWindMin(index)
+	def GetMapWindMax(self, index): return self.unitsync.GetMapWindMax(index)
+	def GetMapGravity(self, index): return self.unitsync.GetMapGravity(index)
+	def GetMapResourceCount(self, index): return self.unitsync.GetMapResourceCount(index)
+	def GetMapResourceName(self, index, resourceIndex): return self.unitsync.GetMapResourceName(index, resourceIndex)
+	def GetMapResourceMax(self, index, resourceIndex): return self.unitsync.GetMapResourceMax(index, resourceIndex)
+	def GetMapResourceExtractorRadius(self, index, resourceIndex): return self.unitsync.GetMapResourceExtractorRadius(index, resourceIndex)
+	def GetMapPosCount(self, index): return self.unitsync.GetMapPosCount(index)
+	def GetMapPosX(self, index, posIndex): return self.unitsync.GetMapPosX(index, posIndex)
+	def GetMapPosZ(self, index, posIndex): return self.unitsync.GetMapPosZ(index, posIndex)
 	def GetMapMinHeight(self, name): return self.unitsync.GetMapMinHeight(name)
 	def GetMapMaxHeight(self, name): return self.unitsync.GetMapMaxHeight(name)
 	def GetMapArchiveCount(self, mapName): return self.unitsync.GetMapArchiveCount(mapName)
@@ -178,7 +208,7 @@ class Unitsync:
 	def GetMapChecksumFromName(self, mapName): return self.unitsync.GetMapChecksumFromName(mapName)
 	def GetMinimap(self, filename, miplevel): return self.unitsync.GetMinimap(filename, miplevel)
 	def GetInfoMapSize(self, filename, name, width, height): return self.unitsync.GetInfoMapSize(filename, name, width, height)
-	def GetInfoMap(self, filename, name, data, typeHint): return self.unitsync.GetInfoMap(filename, name, data, typeHint)
+	def GetInfoMap(self, filename, name, data, typeHint): return self.unitsync.GetInfoMap(filename, name, pointer(data), typeHint)
 	def GetSkirmishAICount(self): return self.unitsync.GetSkirmishAICount()
 	def GetSkirmishAIInfoCount(self, index): return self.unitsync.GetSkirmishAIInfoCount(index)
 	def GetInfoKey(self, index): return self.unitsync.GetInfoKey(index)
@@ -228,7 +258,7 @@ class Unitsync:
 	def GetModValidMap(self, index): return self.unitsync.GetModValidMap(index)
 	def OpenFileVFS(self, name): return self.unitsync.OpenFileVFS(name)
 	def CloseFileVFS(self, handle): return self.unitsync.CloseFileVFS(handle)
-	def ReadFileVFS(self, handle, buf, length): return self.unitsync.ReadFileVFS(handle, buf, length)
+	def ReadFileVFS(self, handle, buf, length): return self.unitsync.ReadFileVFS(handle, pointer(buf), length)
 	def FileSizeVFS(self, handle): return self.unitsync.FileSizeVFS(handle)
 	def InitFindVFS(self, pattern): return self.unitsync.InitFindVFS(pattern)
 	def InitDirListVFS(self, path, pattern, modes): return self.unitsync.InitDirListVFS(path, pattern, modes)
@@ -239,7 +269,7 @@ class Unitsync:
 	def CloseArchive(self, archive): return self.unitsync.CloseArchive(archive)
 	def FindFilesArchive(self, archive, cur, nameBuf, size): return self.unitsync.FindFilesArchive(archive, cur, nameBuf, size)
 	def OpenArchiveFile(self, archive, name): return self.unitsync.OpenArchiveFile(archive, name)
-	def ReadArchiveFile(self, archive, handle, buffer, numBytes): return self.unitsync.ReadArchiveFile(archive, handle, buffer, numBytes)
+	def ReadArchiveFile(self, archive, handle, buffer, numBytes): return self.unitsync.ReadArchiveFile(archive, handle, pointer(buffer), numBytes)
 	def CloseArchiveFile(self, archive, handle): return self.unitsync.CloseArchiveFile(archive, handle)
 	def SizeArchiveFile(self, archive, handle): return self.unitsync.SizeArchiveFile(archive, handle)
 	def SetSpringConfigFile(self, filenameAsAbsolutePath): return self.unitsync.SetSpringConfigFile(filenameAsAbsolutePath)

@@ -30,7 +30,7 @@ class MapInfo(Structure):
 	def __init__(self):
 		self.author = cast(create_string_buffer(200), c_char_p) # BUG: author field shows up as empty, probably something to do with the fact it's after the startpos structs
 		self.description = cast(create_string_buffer(255), c_char_p)
-		
+
 	_fields_ = [('description', c_char_p),
 			('tidalStrength', c_int),
 			('gravity', c_int),
@@ -46,10 +46,10 @@ class MapInfo(Structure):
 '''.lstrip() # takes off the leading \n which is just for aesthetics here :)
 classBase = '''
 class Unitsync:
-	def __init__(self, location='.'):
+	def __init__(self, location):
 		if location.endswith('.so'):
 			self.unitsync = ctypes.cdll.LoadLibrary(location)
-		elif location.endswith('.dll'): 
+		elif location.endswith('.dll'):
 			locationdir = os.path.dirname(location)
 			# load devil first, to avoid dll conflicts
 			ctypes.windll.LoadLibrary(locationdir + "/devil.dll" )
@@ -107,22 +107,22 @@ for line in data.split('\n'):
 	if line.startswith('EXPORT'):
 		returnType, line = line.split('(',1)[1].split(')',1)
 		function, args = line.split('(',1)
-		
+
 		args = args.split(')',1)[0]
 		if args: args = [quickParse(arg) for arg in args.split(',')]
 		else: args = []
 		returnType = quickParse(returnType)
 		function = quickParse(function)
-		
+
 		returnType = getType(returnType)
 		newArgs = []
 		for arg in args:
-			argType, argName = arg.split(' ',1)
+			argType, argName = arg.rsplit(' ',1)
 			argType = getType(argType)
 			newArgs.append((argType, argName))
-		
+
 		functions.append((function, returnType, newArgs))
-		
+
 		#print 'EXPORT(%s) %s(%s);' % (returnType, function, ', '.join(newArgs))
 
 f = open('unitsync.py', 'w')
@@ -145,7 +145,7 @@ for (name, returnType, args) in functions:
 			callTemp.append('pointer(%s)'%argName)
 		else:
 			callTemp.append(argName)
-	
+
 	callArgs = ', '.join(callTemp)
 	defArgs = ('self, '+', '.join(defTemp)) if defTemp else 'self'
 	text = 'def %s(%s): return self.unitsync.%s(%s)' % (name, defArgs, name, callArgs)
