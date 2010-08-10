@@ -46,7 +46,18 @@ class MapInfo(Structure):
 '''.lstrip() # takes off the leading \n which is just for aesthetics here :)
 classBase = '''
 class Unitsync:
+	def has(self, name):
+		"""Query whether the loaded unitsync exports a particular procedure."""
+		return hasattr(self.unitsync, name)
+
+	def _init(self, name, restype):
+		"""Load a procedure from unitsync and assign its return type."""
+		if self.has(name):
+			getattr(self.unitsync, name).restype = restype
+
 	def __init__(self, location):
+		"""Load unitsync from location and attempt to load all known procedures.
+		Location must end with .so (Linux) or .dll (Windows)"""
 		if location.endswith('.so'):
 			self.unitsync = ctypes.cdll.LoadLibrary(location)
 		elif location.endswith('.dll'):
@@ -131,7 +142,7 @@ f.write(classBase)
 
 for (name, returnType, args) in functions:
 	if returnType:
-		text = 'self.unitsync.%s.restype = %s' % (name, returnType)
+		text = 'self._init("%s", %s)' % (name, returnType)
 		f.write('\n\t\t%s'%text)
 
 f.write('\n')

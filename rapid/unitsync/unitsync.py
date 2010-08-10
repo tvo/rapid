@@ -25,7 +25,18 @@ class MapInfo(Structure):
 			('author', c_char_p)]
 
 class Unitsync:
+	def has(self, name):
+		"""Query whether the loaded unitsync exports a particular procedure."""
+		return hasattr(self.unitsync, name)
+
+	def _init(self, name, restype):
+		"""Load a procedure from unitsync and assign its return type."""
+		if self.has(name):
+			getattr(self.unitsync, name).restype = restype
+
 	def __init__(self, location):
+		"""Load unitsync from location and attempt to load all known procedures.
+		Location must end with .so (Linux) or .dll (Windows)"""
 		if location.endswith('.so'):
 			self.unitsync = ctypes.cdll.LoadLibrary(location)
 		elif location.endswith('.dll'):
@@ -37,134 +48,134 @@ class Unitsync:
 			ctypes.windll.LoadLibrary(locationdir + "/SDL.dll" )
 			self.unitsync = ctypes.windll.LoadLibrary(location)
 
-		self.unitsync.GetNextError.restype = c_char_p
-		self.unitsync.GetSpringVersion.restype = c_char_p
-		self.unitsync.Init.restype = c_int
-		self.unitsync.GetWritableDataDirectory.restype = c_char_p
-		self.unitsync.ProcessUnits.restype = c_int
-		self.unitsync.ProcessUnitsNoChecksum.restype = c_int
-		self.unitsync.GetUnitCount.restype = c_int
-		self.unitsync.GetUnitName.restype = c_char_p
-		self.unitsync.GetFullUnitName.restype = c_char_p
-		self.unitsync.GetArchiveChecksum.restype = c_uint
-		self.unitsync.GetArchivePath.restype = c_char_p
-		self.unitsync.GetMapInfoEx.restype = c_int
-		self.unitsync.GetMapInfo.restype = c_int
-		self.unitsync.GetMapCount.restype = c_int
-		self.unitsync.GetMapName.restype = c_char_p
-		self.unitsync.GetMapDescription.restype = c_char_p
-		self.unitsync.GetMapAuthor.restype = c_char_p
-		self.unitsync.GetMapWidth.restype = c_int
-		self.unitsync.GetMapHeight.restype = c_int
-		self.unitsync.GetMapTidalStrength.restype = c_int
-		self.unitsync.GetMapWindMin.restype = c_int
-		self.unitsync.GetMapWindMax.restype = c_int
-		self.unitsync.GetMapGravity.restype = c_int
-		self.unitsync.GetMapResourceCount.restype = c_int
-		self.unitsync.GetMapResourceName.restype = c_char_p
-		self.unitsync.GetMapResourceMax.restype = c_float
-		self.unitsync.GetMapResourceExtractorRadius.restype = c_int
-		self.unitsync.GetMapPosCount.restype = c_int
-		self.unitsync.GetMapPosX.restype = c_float
-		self.unitsync.GetMapPosZ.restype = c_float
-		self.unitsync.GetMapMinHeight.restype = c_float
-		self.unitsync.GetMapMaxHeight.restype = c_float
-		self.unitsync.GetMapArchiveCount.restype = c_int
-		self.unitsync.GetMapArchiveName.restype = c_char_p
-		self.unitsync.GetMapChecksum.restype = c_uint
-		self.unitsync.GetMapChecksumFromName.restype = c_uint
-		self.unitsync.GetMinimap.restype = pointer
-		self.unitsync.GetInfoMapSize.restype = c_int
-		self.unitsync.GetInfoMap.restype = c_int
-		self.unitsync.GetSkirmishAICount.restype = c_int
-		self.unitsync.GetSkirmishAIInfoCount.restype = c_int
-		self.unitsync.GetInfoKey.restype = c_char_p
-		self.unitsync.GetInfoValue.restype = c_char_p
-		self.unitsync.GetInfoDescription.restype = c_char_p
-		self.unitsync.GetSkirmishAIOptionCount.restype = c_int
-		self.unitsync.GetPrimaryModCount.restype = c_int
-		self.unitsync.GetPrimaryModName.restype = c_char_p
-		self.unitsync.GetPrimaryModShortName.restype = c_char_p
-		self.unitsync.GetPrimaryModVersion.restype = c_char_p
-		self.unitsync.GetPrimaryModMutator.restype = c_char_p
-		self.unitsync.GetPrimaryModGame.restype = c_char_p
-		self.unitsync.GetPrimaryModShortGame.restype = c_char_p
-		self.unitsync.GetPrimaryModDescription.restype = c_char_p
-		self.unitsync.GetPrimaryModArchive.restype = c_char_p
-		self.unitsync.GetPrimaryModArchiveCount.restype = c_int
-		self.unitsync.GetPrimaryModArchiveList.restype = c_char_p
-		self.unitsync.GetPrimaryModIndex.restype = c_int
-		self.unitsync.GetPrimaryModChecksum.restype = c_uint
-		self.unitsync.GetPrimaryModChecksumFromName.restype = c_uint
-		self.unitsync.GetSideCount.restype = c_int
-		self.unitsync.GetSideName.restype = c_char_p
-		self.unitsync.GetSideStartUnit.restype = c_char_p
-		self.unitsync.GetMapOptionCount.restype = c_int
-		self.unitsync.GetModOptionCount.restype = c_int
-		self.unitsync.GetCustomOptionCount.restype = c_int
-		self.unitsync.GetOptionKey.restype = c_char_p
-		self.unitsync.GetOptionScope.restype = c_char_p
-		self.unitsync.GetOptionName.restype = c_char_p
-		self.unitsync.GetOptionSection.restype = c_char_p
-		self.unitsync.GetOptionStyle.restype = c_char_p
-		self.unitsync.GetOptionDesc.restype = c_char_p
-		self.unitsync.GetOptionType.restype = c_int
-		self.unitsync.GetOptionBoolDef.restype = c_int
-		self.unitsync.GetOptionNumberDef.restype = c_float
-		self.unitsync.GetOptionNumberMin.restype = c_float
-		self.unitsync.GetOptionNumberMax.restype = c_float
-		self.unitsync.GetOptionNumberStep.restype = c_float
-		self.unitsync.GetOptionStringDef.restype = c_char_p
-		self.unitsync.GetOptionStringMaxLen.restype = c_int
-		self.unitsync.GetOptionListCount.restype = c_int
-		self.unitsync.GetOptionListDef.restype = c_char_p
-		self.unitsync.GetOptionListItemKey.restype = c_char_p
-		self.unitsync.GetOptionListItemName.restype = c_char_p
-		self.unitsync.GetOptionListItemDesc.restype = c_char_p
-		self.unitsync.GetModValidMapCount.restype = c_int
-		self.unitsync.GetModValidMap.restype = c_char_p
-		self.unitsync.OpenFileVFS.restype = c_int
-		self.unitsync.ReadFileVFS.restype = c_int
-		self.unitsync.FileSizeVFS.restype = c_int
-		self.unitsync.InitFindVFS.restype = c_int
-		self.unitsync.InitDirListVFS.restype = c_int
-		self.unitsync.InitSubDirsVFS.restype = c_int
-		self.unitsync.FindFilesVFS.restype = c_int
-		self.unitsync.OpenArchive.restype = c_int
-		self.unitsync.OpenArchiveType.restype = c_int
-		self.unitsync.FindFilesArchive.restype = c_int
-		self.unitsync.OpenArchiveFile.restype = c_int
-		self.unitsync.ReadArchiveFile.restype = c_int
-		self.unitsync.SizeArchiveFile.restype = c_int
-		self.unitsync.GetSpringConfigFile.restype = c_char_p
-		self.unitsync.GetSpringConfigString.restype = c_char_p
-		self.unitsync.GetSpringConfigInt.restype = c_int
-		self.unitsync.GetSpringConfigFloat.restype = c_float
-		self.unitsync.lpOpenFile.restype = c_int
-		self.unitsync.lpOpenSource.restype = c_int
-		self.unitsync.lpExecute.restype = c_int
-		self.unitsync.lpErrorLog.restype = c_char_p
-		self.unitsync.lpRootTable.restype = c_int
-		self.unitsync.lpRootTableExpr.restype = c_int
-		self.unitsync.lpSubTableInt.restype = c_int
-		self.unitsync.lpSubTableStr.restype = c_int
-		self.unitsync.lpSubTableExpr.restype = c_int
-		self.unitsync.lpGetKeyExistsInt.restype = c_int
-		self.unitsync.lpGetKeyExistsStr.restype = c_int
-		self.unitsync.lpGetIntKeyType.restype = c_int
-		self.unitsync.lpGetStrKeyType.restype = c_int
-		self.unitsync.lpGetIntKeyListCount.restype = c_int
-		self.unitsync.lpGetIntKeyListEntry.restype = c_int
-		self.unitsync.lpGetStrKeyListCount.restype = c_int
-		self.unitsync.lpGetStrKeyListEntry.restype = c_char_p
-		self.unitsync.lpGetIntKeyIntVal.restype = c_int
-		self.unitsync.lpGetStrKeyIntVal.restype = c_int
-		self.unitsync.lpGetIntKeyBoolVal.restype = c_int
-		self.unitsync.lpGetStrKeyBoolVal.restype = c_int
-		self.unitsync.lpGetIntKeyFloatVal.restype = c_float
-		self.unitsync.lpGetStrKeyFloatVal.restype = c_float
-		self.unitsync.lpGetIntKeyStrVal.restype = c_char_p
-		self.unitsync.lpGetStrKeyStrVal.restype = c_char_p
+		self._init("GetNextError", c_char_p)
+		self._init("GetSpringVersion", c_char_p)
+		self._init("Init", c_int)
+		self._init("GetWritableDataDirectory", c_char_p)
+		self._init("ProcessUnits", c_int)
+		self._init("ProcessUnitsNoChecksum", c_int)
+		self._init("GetUnitCount", c_int)
+		self._init("GetUnitName", c_char_p)
+		self._init("GetFullUnitName", c_char_p)
+		self._init("GetArchiveChecksum", c_uint)
+		self._init("GetArchivePath", c_char_p)
+		self._init("GetMapInfoEx", c_int)
+		self._init("GetMapInfo", c_int)
+		self._init("GetMapCount", c_int)
+		self._init("GetMapName", c_char_p)
+		self._init("GetMapDescription", c_char_p)
+		self._init("GetMapAuthor", c_char_p)
+		self._init("GetMapWidth", c_int)
+		self._init("GetMapHeight", c_int)
+		self._init("GetMapTidalStrength", c_int)
+		self._init("GetMapWindMin", c_int)
+		self._init("GetMapWindMax", c_int)
+		self._init("GetMapGravity", c_int)
+		self._init("GetMapResourceCount", c_int)
+		self._init("GetMapResourceName", c_char_p)
+		self._init("GetMapResourceMax", c_float)
+		self._init("GetMapResourceExtractorRadius", c_int)
+		self._init("GetMapPosCount", c_int)
+		self._init("GetMapPosX", c_float)
+		self._init("GetMapPosZ", c_float)
+		self._init("GetMapMinHeight", c_float)
+		self._init("GetMapMaxHeight", c_float)
+		self._init("GetMapArchiveCount", c_int)
+		self._init("GetMapArchiveName", c_char_p)
+		self._init("GetMapChecksum", c_uint)
+		self._init("GetMapChecksumFromName", c_uint)
+		self._init("GetMinimap", pointer)
+		self._init("GetInfoMapSize", c_int)
+		self._init("GetInfoMap", c_int)
+		self._init("GetSkirmishAICount", c_int)
+		self._init("GetSkirmishAIInfoCount", c_int)
+		self._init("GetInfoKey", c_char_p)
+		self._init("GetInfoValue", c_char_p)
+		self._init("GetInfoDescription", c_char_p)
+		self._init("GetSkirmishAIOptionCount", c_int)
+		self._init("GetPrimaryModCount", c_int)
+		self._init("GetPrimaryModName", c_char_p)
+		self._init("GetPrimaryModShortName", c_char_p)
+		self._init("GetPrimaryModVersion", c_char_p)
+		self._init("GetPrimaryModMutator", c_char_p)
+		self._init("GetPrimaryModGame", c_char_p)
+		self._init("GetPrimaryModShortGame", c_char_p)
+		self._init("GetPrimaryModDescription", c_char_p)
+		self._init("GetPrimaryModArchive", c_char_p)
+		self._init("GetPrimaryModArchiveCount", c_int)
+		self._init("GetPrimaryModArchiveList", c_char_p)
+		self._init("GetPrimaryModIndex", c_int)
+		self._init("GetPrimaryModChecksum", c_uint)
+		self._init("GetPrimaryModChecksumFromName", c_uint)
+		self._init("GetSideCount", c_int)
+		self._init("GetSideName", c_char_p)
+		self._init("GetSideStartUnit", c_char_p)
+		self._init("GetMapOptionCount", c_int)
+		self._init("GetModOptionCount", c_int)
+		self._init("GetCustomOptionCount", c_int)
+		self._init("GetOptionKey", c_char_p)
+		self._init("GetOptionScope", c_char_p)
+		self._init("GetOptionName", c_char_p)
+		self._init("GetOptionSection", c_char_p)
+		self._init("GetOptionStyle", c_char_p)
+		self._init("GetOptionDesc", c_char_p)
+		self._init("GetOptionType", c_int)
+		self._init("GetOptionBoolDef", c_int)
+		self._init("GetOptionNumberDef", c_float)
+		self._init("GetOptionNumberMin", c_float)
+		self._init("GetOptionNumberMax", c_float)
+		self._init("GetOptionNumberStep", c_float)
+		self._init("GetOptionStringDef", c_char_p)
+		self._init("GetOptionStringMaxLen", c_int)
+		self._init("GetOptionListCount", c_int)
+		self._init("GetOptionListDef", c_char_p)
+		self._init("GetOptionListItemKey", c_char_p)
+		self._init("GetOptionListItemName", c_char_p)
+		self._init("GetOptionListItemDesc", c_char_p)
+		self._init("GetModValidMapCount", c_int)
+		self._init("GetModValidMap", c_char_p)
+		self._init("OpenFileVFS", c_int)
+		self._init("ReadFileVFS", c_int)
+		self._init("FileSizeVFS", c_int)
+		self._init("InitFindVFS", c_int)
+		self._init("InitDirListVFS", c_int)
+		self._init("InitSubDirsVFS", c_int)
+		self._init("FindFilesVFS", c_int)
+		self._init("OpenArchive", c_int)
+		self._init("OpenArchiveType", c_int)
+		self._init("FindFilesArchive", c_int)
+		self._init("OpenArchiveFile", c_int)
+		self._init("ReadArchiveFile", c_int)
+		self._init("SizeArchiveFile", c_int)
+		self._init("GetSpringConfigFile", c_char_p)
+		self._init("GetSpringConfigString", c_char_p)
+		self._init("GetSpringConfigInt", c_int)
+		self._init("GetSpringConfigFloat", c_float)
+		self._init("lpOpenFile", c_int)
+		self._init("lpOpenSource", c_int)
+		self._init("lpExecute", c_int)
+		self._init("lpErrorLog", c_char_p)
+		self._init("lpRootTable", c_int)
+		self._init("lpRootTableExpr", c_int)
+		self._init("lpSubTableInt", c_int)
+		self._init("lpSubTableStr", c_int)
+		self._init("lpSubTableExpr", c_int)
+		self._init("lpGetKeyExistsInt", c_int)
+		self._init("lpGetKeyExistsStr", c_int)
+		self._init("lpGetIntKeyType", c_int)
+		self._init("lpGetStrKeyType", c_int)
+		self._init("lpGetIntKeyListCount", c_int)
+		self._init("lpGetIntKeyListEntry", c_int)
+		self._init("lpGetStrKeyListCount", c_int)
+		self._init("lpGetStrKeyListEntry", c_char_p)
+		self._init("lpGetIntKeyIntVal", c_int)
+		self._init("lpGetStrKeyIntVal", c_int)
+		self._init("lpGetIntKeyBoolVal", c_int)
+		self._init("lpGetStrKeyBoolVal", c_int)
+		self._init("lpGetIntKeyFloatVal", c_float)
+		self._init("lpGetStrKeyFloatVal", c_float)
+		self._init("lpGetIntKeyStrVal", c_char_p)
+		self._init("lpGetStrKeyStrVal", c_char_p)
 
 	def GetNextError(self): return self.unitsync.GetNextError()
 	def GetSpringVersion(self): return self.unitsync.GetSpringVersion()
