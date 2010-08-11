@@ -9,32 +9,6 @@ import rapid
 import getopt, gzip, os, sys
 
 
-def usage():
-	print """Usage: %(progname)s <verb> [<argument>]
-
-Where verb is one of:
- * upgrade: Install the latest package for all pinned tags.
- * clean-upgrade: Equivalent to 'upgrade' followed by 'uninstall-unpinned'. 
- * pin: Pins a tag and installs the latest package for that tag.
- * unpin: Unpins a tag. Does not uninstall any packages.
- * install: Install a package. Does not pin any tags.
- * uninstall: Uninstall a package. Unpin its tag if any.
- * list-tags: List all tags that contain <argument>.
- * list-pinned-tags: Idem, but only pinned tags.
- * list-packages: List all packages whose name contains <argument>.
- * list-installed-packages: Idem, but only installed packages.
- * uninstall-unpinned: Keep only the pinned tags and all dependencies.
- * collect-pool: Remove pool files not needed by any installed package.
- * make-sdd: Extract pool files into a .sdd archive.
-
-Examples:
-%(progname)s pin xta:latest   # installs latest XTA
-%(progname)s pin s44:latest   # installs latest Spring: 1944
-%(progname)s upgrade          # upgrade all pinned tags
-""" % {'progname': sys.argv[0]}
-	sys.exit(1)
-
-
 #  Create rapid module.
 spring_dir = rapid.spring_dir
 pool_dir = rapid.pool_dir
@@ -296,19 +270,3 @@ def make_sdd(package, path):
 			with closing(open(target_name, 'wb')) as target:
 				target.write(source.read())
 		progress(1)
-
-
-where = [2]
-
-def req_arg():
-	if len(sys.argv) <= where[0]:
-		print 'Not enough arguments to operation.'
-		print
-		usage()
-	where[0] += 1
-	return sys.argv[where[0] - 1]
-
-def opt_arg():
-	if len(sys.argv) > 2:
-		return sys.argv[2]
-	return ''
