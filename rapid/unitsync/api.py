@@ -76,6 +76,7 @@ def locate_unitsync():
 
 def get_writable_data_directory():
 	"""Acquire Springs `writable data directory' from unitsync, or raise UnitsyncError."""
+	unitsync = locate_unitsync()
 	if unitsync.Init(False, 0) == 1:
 		data_directory = unitsync.GetWritableDataDirectory()
 		unitsync.UnInit()
@@ -83,8 +84,7 @@ def get_writable_data_directory():
 		raise UnitsyncError('unitsync.Init(...) failed')
 	return data_directory
 
-
-if __name__ == '__main__':
+def test():
 	# Quick test.
 	for location in generate_locations():
 		print location
@@ -94,3 +94,7 @@ if __name__ == '__main__':
 	# Test main interface.
 	data_directory = get_writable_data_directory()
 	print '===>', data_directory, '<==='
+
+
+if __name__ == '__main__':
+	test()
