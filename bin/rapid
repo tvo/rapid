@@ -7,8 +7,7 @@ from optparse import OptionParser
 from rapid.main import *
 
 
-def usage():
-	print """Usage: %(prog)s <verb> [<argument>]
+usage = """Usage: %prog [options] <verb> [<argument>]
 
 Where verb is one of:
  * upgrade: Install the latest package for all pinned tags.
@@ -26,19 +25,18 @@ Where verb is one of:
  * make-sdd: Extract pool files into a .sdd archive.
 
 Examples:
-%(prog)s pin xta:latest   # installs latest XTA
-%(prog)s pin s44:latest   # installs latest Spring: 1944
-%(prog)s upgrade          # upgrade all pinned tags
-""" % {'prog': os.path.basename(sys.argv[0])}
-	sys.exit(1)
+%prog pin xta:latest   # installs latest XTA
+%prog pin s44:latest   # installs latest Spring: 1944
+%prog upgrade          # upgrade all pinned tags"""
 
 
 if __name__ == '__main__':
-	parser = OptionParser()
+	parser = OptionParser(usage=usage)
 	(options, args) = parser.parse_args()
 
-	if len(args) < 1:
-		usage()
+	def usage():
+		parser.print_usage()
+		sys.exit(1)
 
 	def req_arg():
 		if len(args) < 1:
@@ -51,6 +49,9 @@ if __name__ == '__main__':
 		if len(args) >= 1:
 			return args.pop(0)
 		return ''
+
+	if len(args) < 1:
+		usage()
 
 	verb = args.pop(0)
 
