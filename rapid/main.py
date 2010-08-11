@@ -9,10 +9,17 @@ import rapid
 import getopt, gzip, os, sys
 
 
-#  Create rapid module.
-spring_dir = rapid.spring_dir
-pool_dir = rapid.pool_dir
-rapid = rapid.Rapid()
+def init(data_dir):
+	"""  Create rapid module."""
+	global spring_dir, pool_dir, rapid
+
+	print 'Using data directory:', data_dir
+	rapid.set_spring_dir(data_dir)
+
+	# Global constants/rapid instance.
+	spring_dir = rapid.spring_dir
+	pool_dir = rapid.pool_dir
+	rapid = rapid.Rapid()
 
 
 def select(noun, needle, haystack):

@@ -8,7 +8,7 @@ from hashlib import md5
 from urlparse import urlparse
 from StringIO import StringIO
 import binascii, gzip, os, struct, weakref
-import ConfigParser 
+import ConfigParser
 
 from downloader import Downloader, atomic_write
 
@@ -27,12 +27,6 @@ def set_spring_dir(path):
 	pool_dir = os.path.join(spring_dir, 'pool')
 	package_dir = os.path.join(spring_dir, 'packages')
 	content_dir = os.path.join(spring_dir, 'rapid')
-
-if os.name == 'posix':
-	set_spring_dir(os.path.expanduser('~/.spring'))
-#FIXME: elif os.name =='nt':
-else:
-	raise NotImplementedError('Unknown OS: %s' % os.name)
 
 ################################################################################
 
@@ -583,10 +577,10 @@ class File(object):
 		# Get the physical path to the file in the pool.
 		hex = binascii.hexlify(md5)
 		pool_path = os.path.join(pool_dir, hex[:2], hex[2:]) + '.gz'
-	
+
 		# pool_path identifies the pool file, but name may differ per package.
 		key = (pool_path, name)
-	
+
 		# If we got it already, return flyweight File object.
 		if key in File.__files:
 			f = File.__files[key]
