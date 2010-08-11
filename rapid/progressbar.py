@@ -21,7 +21,7 @@ class ProgressBar:
 		You may specify the progress bar's width, min and max values on init.
 	"""
 
-	def __init__(self, minValue = 0, maxValue = 100, totalWidth=80):
+	def __init__(self, minValue = 0, maxValue = 100, totalWidth=79):
 		self.progBar = "[]"   # This holds the progress bar string
 		self.min = minValue
 		self.max = maxValue
