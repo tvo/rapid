@@ -7,7 +7,7 @@ from contextlib import closing
 from hashlib import md5
 from urlparse import urlparse
 from StringIO import StringIO
-import binascii, gzip, os, struct, weakref
+import binascii, gzip, os, shutil, struct, weakref
 import ConfigParser
 
 from downloader import Downloader, atomic_write
@@ -530,8 +530,10 @@ class Package(object):
 			if not self.can_be_installed:
 				raise DependencyException()
 			self.download_files(self.missing_files, progress)
-			#FIXME: Windows support
-			os.link(self.cache_file, self.installed_path)
+			if hasattr(os, 'link'):
+				os.link(self.cache_file, self.installed_path)
+			else:
+				shutil.copy(self.cache_file, self.installed_path)
 			if progress:
 				progress(progress.maximum())
 
@@ -608,7 +610,7 @@ class File(object):
 
 ################################################################################
 
-import unittest, shutil
+import unittest
 from downloader import MockDownloader
 
 
