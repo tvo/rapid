@@ -3,11 +3,12 @@
 # Copyright (C) 2010 Tobi Vollebregt
 
 import os, sys
+from optparse import OptionParser
 from rapid.main import *
 
 
 def usage():
-	print """Usage: %(progname)s <verb> [<argument>]
+	print """Usage: %(prog)s <verb> [<argument>]
 
 Where verb is one of:
  * upgrade: Install the latest package for all pinned tags.
@@ -25,34 +26,33 @@ Where verb is one of:
  * make-sdd: Extract pool files into a .sdd archive.
 
 Examples:
-%(progname)s pin xta:latest   # installs latest XTA
-%(progname)s pin s44:latest   # installs latest Spring: 1944
-%(progname)s upgrade          # upgrade all pinned tags
-""" % {'progname': sys.argv[0]}
+%(prog)s pin xta:latest   # installs latest XTA
+%(prog)s pin s44:latest   # installs latest Spring: 1944
+%(prog)s upgrade          # upgrade all pinned tags
+""" % {'prog': os.path.basename(sys.argv[0])}
 	sys.exit(1)
 
 
-where = [2]
-
-def req_arg():
-	if len(sys.argv) <= where[0]:
-		print 'Not enough arguments to operation.'
-		print
-		usage()
-	where[0] += 1
-	return sys.argv[where[0] - 1]
-
-def opt_arg():
-	if len(sys.argv) > 2:
-		return sys.argv[2]
-	return ''
-
-
 if __name__ == '__main__':
-	if len(sys.argv) < 2:
+	parser = OptionParser()
+	(options, args) = parser.parse_args()
+
+	if len(args) < 1:
 		usage()
 
-	verb = sys.argv[1]
+	def req_arg():
+		if len(args) < 1:
+			print 'Not enough arguments to operation.'
+			print
+			usage()
+		return args.pop(0)
+
+	def opt_arg():
+		if len(args) >= 1:
+			return args.pop(0)
+		return ''
+
+	verb = args.pop(0)
 
 	if verb == 'pin':
 		pin(req_arg())
