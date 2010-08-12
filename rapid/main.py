@@ -45,10 +45,10 @@ class TextUserInteraction:
 	def important_warning(self, *lines):
 		""" Display an important warning to the user."""
 		print
-		print '#' * 80
+		print '#' * 79
 		for line in lines:
-			print '# %-76s #' % line.center(76)
-		print '#' * 80
+			print '# %-75s #' % line.center(75)
+		print '#' * 79
 		print
 
 
