@@ -7,13 +7,59 @@ from ConfigParser import RawConfigParser as ConfigParser
 from progressbar import ProgressBar
 import rapid
 import getopt, gzip, os, sys
+import re
+import logging
+
+
+log = logging.getLogger('root')
+
+
+class TextUserInteraction:
+	def confirm(self, text):
+		""" Ask the user for confirmation."""
+		return raw_input(text + ' [y/N]: ').startswith('y')
+
+	def choose_many(self, header, options, question):
+		""" Let the user choose multiple options from a list."""
+		print header
+		for i in range(len(options)):
+			print '%2i.  %s' % (i + 1, options[i])
+		which = raw_input(question + " [enter number(s) or 'all']: ")
+		if which.lower().strip() == 'all':
+			return options
+		which = re.split(r'[\s,]+', which)
+		try:
+			return [options[int(x)] for x in which]
+		except ValueError:
+			sys.exit(1)
+
+	def output_header(self, text):
+		""" Output the header of a list/table."""
+		print text
+
+	def output_detail(self, text):
+		""" Output a detail row of a list/table.
+		TODO: Interface should be improved."""
+		print text
+
+	def important_warning(self, *lines):
+		""" Display an important warning to the user."""
+		print
+		print '#' * 80
+		for line in lines:
+			print '# %-76s #' % line.center(76)
+		print '#' * 80
+		print
+
+
+ui = TextUserInteraction()
 
 
 def init(data_dir):
 	"""  Create rapid module."""
 	global spring_dir, pool_dir, rapid
 
-	print 'Using data directory:', data_dir
+	log.info('Using data directory: %s', data_dir)
 	rapid.set_spring_dir(data_dir)
 
 	# Global constants/rapid instance.
@@ -27,25 +73,15 @@ def select(noun, needle, haystack):
 	selected = filter(lambda s: n in str(s).lower(), haystack)
 
 	if len(selected) == 0:
-		print 'No %ss matching %s found.' % (noun, needle)
+		log.error('No %ss matching %s found.', noun, needle)
 		sys.exit(1)
 
 	if len(selected) >= 100:
-		print '100 or more matching %ss found, please narrow your search.' % noun
+		log.error('100 or more matching %ss found, please narrow your search.', noun)
 		sys.exit(1)
 
 	if len(selected) > 1:
-		print 'Multiple %ss found:' % noun
-		for i in range(len(selected)):
-			print '%2i.  %s' % (i + 1, selected[i])
-		which = raw_input("Which %s do you mean? (enter number or 'all')   " % noun)
-		if which == 'all':
-			return selected
-		try:
-			which = int(which) - 1
-		except ValueError:
-			sys.exit(1)
-		return [selected[which]]
+		return ui.choose_many('Multiple %ss found:' % noun, selected, 'Which %s do you mean?' % noun)
 
 	return selected
 
@@ -54,10 +90,10 @@ def pin_single(tag):
 	""" Pin a tag. This means any package having this tag will automatically be
 	    installed and upgraded."""
 	if not tag in rapid.pinned_tags:
-		print 'Pinning: ' + tag
+		log.info('Pinning: %s', tag)
 		rapid.pinned_tags.add(tag)
 	else:
-		print 'Already pinned: ' + tag
+		log.info('Already pinned: %s', tag)
 
 
 def pin(searchterm):
@@ -71,10 +107,10 @@ def unpin_single(tag):
 	""" Unpin a tag. This means packages having this tag will not be
 	    automatically upgraded anymore. Does not uninstall anything."""
 	if tag in rapid.pinned_tags:
-		print 'Unpinning: ' + tag
+		log.info('Unpinning: %s', tag)
 		rapid.pinned_tags.remove(tag)
 	else:
-		print 'Not pinned: ' + tag
+		log.info('Not pinned: %s', tag)
 
 
 def unpin(searchterm):
@@ -89,10 +125,10 @@ def install_single(p, dep = False):
 		for d in p.dependencies:
 			install_single(d, True)
 		if not p.installed:
-			print ['Installing: ', 'Installing dependency: '][int(dep)] + p.name
+			log.info('Installing%s: %s', ' dependency' if dep else '', p.name)
 			p.install(ProgressBar())
 		elif not dep:
-			print 'Already installed: ' + p.name
+			log.info('Already installed: ', p.name)
 
 
 def install(searchterm):
@@ -105,11 +141,11 @@ def uninstall_single(p):
 	""" Uninstall and unpin a single package. Does not uninstall dependencies."""
 	if p:
 		if not p.can_be_uninstalled:
-			print 'Can not uninstall because of dependencies: ' + p.name
+			log.error('Can not uninstall because of dependencies: %s', p.name)
 			return
 		for t in p.tags:
 			unpin_single(t)
-		print 'Uninstalling: ' + p.name
+		log.info('Uninstalling: %s', p.name)
 		p.uninstall()
 
 
@@ -121,10 +157,10 @@ def uninstall_single_plus_revdeps(p, dep = False):
 		for t in p.tags:
 			unpin_single(t)
 		if p.installed:
-			print ['Uninstalling: ', 'Uninstalling dependency: '][int(dep)] + p.name
+			log.info('Uninstalling%s: %s', ' dependency' if dep else '', p.name)
 			p.uninstall()
 		elif not dep:
-			print 'Already uninstalled: ' + p.name
+			log.info('Already uninstalled: %s', p.name)
 
 
 def uninstall(searchterm):
@@ -136,34 +172,34 @@ def uninstall(searchterm):
 def list_packages(searchterm, available):
 	""" List all packages whose name matches searchterm."""
 	s = searchterm.lower()
-	print 'Installed packages:'
+	ui.output_header('Installed packages:')
 	for p in rapid.packages:
 		if p.installed and s in p.name.lower():
-			print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
+			ui.output_detail('  %-40s (%s)' % (p.name, ', '.join(p.tags)))
 	if available:
-		print 'Available packages:'
+		ui.output_header('Available packages:')
 		for p in rapid.packages:
 			if not p.installed and s in p.name.lower():
-				print '  %-40s (%s)' % (p.name, ', '.join(p.tags))
+				ui.output_detail('  %-40s (%s)' % (p.name, ', '.join(p.tags)))
 
 
 def list_tags(searchterm, available):
 	""" List all tags which match searchterm."""
 	s = searchterm.lower()
-	print 'Pinned tags:'
+	ui.output_header('Pinned tags:')
 	for tag in rapid.pinned_tags:
 		if s in tag.lower():
 			p = rapid.packages[tag]
 			if p:
-				print '  %-40s (%s)' % (tag, p.name)
+				ui.output_detail('  %-40s (%s)' % (tag, p.name))
 			else:
-				print '  %-40s [dangling tag]' % tag
+				ui.output_detail('  %-40s [dangling tag]' % tag)
 	if available:
-		print 'Available tags:'
+		ui.output_header('Available tags:')
 		for tag in rapid.tags:
 			if s in tag.lower() and s not in rapid.pinned_tags:
 				p = rapid.packages[tag]
-				print '  %-40s (%s)' % (tag, p.name)
+				ui.output_detail('  %-40s (%s)' % (tag, p.name))
 
 
 def upgrade():
@@ -193,11 +229,11 @@ def uninstall_unpinned():
 
 	# Anything to do?
 	if not garbage:
-		print 'Nothing to do.'
+		log.info('Nothing to do.')
 		return
 
 	# Confirmation?
-	if (not raw_input('Uninstall %s? [y/N]: ' % ', '.join(p.name for p in garbage)).startswith('y')):
+	if not ui.confirm('Uninstall %s?' % ', '.join(p.name for p in garbage)):
 		return
 
 	# Uninstall all garbage.
@@ -230,44 +266,42 @@ def collect_pool():
 
 	count, size = gc(False)
 
-	print '%.2f megabytes / %d files can be collected from the pool.' % (size / (1024.*1024.), count)
+	log.info('%.2f megabytes / %d files can be collected from the pool.', size / (1024.*1024.), count)
 	if count == 0:
 		return
 
 	# Confirmation?
-	print
-	print '#' * 80
-	print '# %-76s #' % 'Collecting pool files will delete the data from disk permantly.'.center(76)
-	print '# %-76s #' % 'You will have to download the data again in case you need it.'.center(76)
-	print '#' * 80
-	print
-	if (not raw_input('Delete %d pool files? [y/N]: ' % count).startswith('y')):
+	ui.important_warning(
+		'Collecting pool files will delete the data from disk permantly.',
+		'You will have to download the data again in case you need it.')
+
+	if not ui.confirm('Delete %d pool files?' % count):
 		return
 
 	count, size = gc(True)
-	print '%.2f megabytes / %d files deleted from the pool.' % (size / (1024.*1024.), count)
+	log.info('%.2f megabytes / %d files deleted from the pool.', size / (1024.*1024.), count)
 
 
 def make_sdd(package, path):
 	""" Extract all files for a single package from the pool and put them in
 	    a newly created .sdd package."""
 	if package not in rapid.packages:
-		print 'Package %s not known' % package
+		log.error('Package %s not known', package)
 		return
 	package = rapid.packages[package]
 	if not os.path.exists(os.path.dirname(path)):
 		path = os.path.join(spring_dir, 'mods', path)
 	if os.path.exists(path):
-		print '%s already exists' % path
+		log.error('%s already exists', path)
 		return
 
 	missing_files = package.missing_files
 	if missing_files:
-		print 'Downloading %d missing files for: %s' % (len(missing_files), package.name)
+		log.info('Downloading %d missing files for: %s', len(missing_files), package.name)
 		package.download_files(missing_files, ProgressBar())
 
 	files = package.files
-	print 'Extracting %d files into: %s' % (len(files), path)
+	log.info('Extracting %d files into: %s', len(files), path)
 	progress = ProgressBar(maxValue = len(files))
 	for f in files:
 		target_name = os.path.join(path, f.name)

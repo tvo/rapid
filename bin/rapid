@@ -3,6 +3,7 @@
 # Copyright (C) 2010 Tobi Vollebregt
 
 import os, sys
+import logging
 from optparse import OptionParser
 from rapid.main import *
 from rapid.unitsync.api import get_writable_data_directory
@@ -32,6 +33,7 @@ Examples:
 
 
 if __name__ == '__main__':
+	logging.basicConfig(level = logging.INFO, stream = sys.stdout, format = '%(message)s')
 	parser = OptionParser(usage=usage)
 
 	parser.add_option('--datadir',
