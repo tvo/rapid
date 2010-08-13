@@ -6,7 +6,7 @@ setup(
     version='0.3.0',
     author='Tobi Vollebregt',
     author_email='tobivollebregt@gmail.com',
-    packages=['rapid'],
+    packages=['rapid', 'rapid.unitsync'],
     scripts=['bin/rapid','bin/rapid-gui'],
     url='http://pypi.python.org/pypi/rapid-spring/',
     license='LICENSE.txt',
