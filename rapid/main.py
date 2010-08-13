@@ -128,7 +128,7 @@ def install_single(p, dep = False):
 			log.info('Installing%s: %s', ' dependency' if dep else '', p.name)
 			p.install(ProgressBar())
 		elif not dep:
-			log.info('Already installed: ', p.name)
+			log.info('Already installed: %s', p.name)
 
 
 def install(searchterm):
