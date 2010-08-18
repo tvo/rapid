@@ -1,0 +1,31 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.TH RAPID-GUI "6" "August 2010" "rapid-gui rapid-gui" "Games"
+.SH NAME
+rapid-gui \- GUI for rapid a content download tool for spring
+.SH SYNOPSIS
+.B rapid-gui
+[\fIoptions\fR]
+.B rapid-spring-gui
+[\fIoptions\fR]
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+show a help message and exit
+.TP
+\fB\-\-datadir\fR=\fIDATADIR\fR
+Override the default data directory. (~/.spring on Linux
+or the one reported by unitsync on Windows)
+.TP
+\fB\-\-unitsync\fR
+Use unitsync to locate the data directory Spring uses.
+.TP
+\fB\-\-no\-unitsync\fR
+Do not use unitsync.
+.SH SEE ALSO
+.BR rapid (6),
+.BR spring (6)
+.SH AUTHOR
+Tobi Vollebregt <tobivollebregt@gmail.com>
+.PP
+This manual page was written by Jan Dittberner <jandd@debian.org>, for
+the Debian project (but may be used by others).

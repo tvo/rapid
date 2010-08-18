@@ -1,0 +1,83 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.TH RAPID "6" "August 2010" "rapid" "Games"
+.SH NAME
+rapid \- content download tool for spring
+.SH SYNOPSIS
+.B rapid
+[\fIoptions\fR] \fI<action> \fR[\fI<argument>\fR]
+
+.B rapid-spring
+[\fIoptions\fR] \fI<action> \fR[\fI<argument>\fR]
+.SH DESCRIPTION
+Rapid manages downloads of content for the spring RTS engine.
+
+.SH OPTIONS
+action in the command line is one of:
+.IP
+.B upgrade:
+Install the latest package for all pinned tags.
+.IP
+.B clean\-upgrade:
+Equivalent to 'upgrade' followed by 'uninstall\-unpinned'.
+.IP
+.B pin:
+Pins a tag and installs the latest package for that tag.
+.IP
+.B unpin:
+Unpins a tag. Does not uninstall any packages.
+.IP
+.B install:
+Install a package. Does not pin any tags.
+.IP
+.B uninstall:
+Uninstall a package. Unpin its tag if any.
+.IP
+.B list\-tags:
+List all tags that contain <argument>.
+.IP
+.B list\-pinned\-tags:
+Idem, but only pinned tags.
+.IP
+.B list\-packages:
+List all packages whose name contains <argument>.
+.IP
+.B list\-installed\-packages:
+Idem, but only installed packages.
+.IP
+.B uninstall\-unpinned:
+Keep only the pinned tags and all dependencies.
+.IP
+.B collect\-pool:
+Remove pool files not needed by any installed package.
+.IP
+.B make\-sdd:
+Extract pool files into a .sdd archive.
+.TP
+these are the possible options:
+.IP
+\fB\-h\fR, \fB\-\-help\fR
+show this help message and exit
+.IP
+\fB\-\-datadir\fR=\fIDATADIR\fR
+Override the default data directory. (~/.spring on Linux
+or the one reported by unitsync on Windows)
+.IP
+\fB\-\-unitsync\fR
+Use unitsync to locate the data directory Spring uses.
+.IP
+\fB\-\-no\-unitsync\fR
+Do not use unitsync.
+.SH EXAMPLES
+rapid pin xta:latest   # installs latest XTA
+.P
+rapid pin s44:latest   # installs latest Spring: 1944
+.P
+rapid upgrade          # upgrade all pinned tags
+.SH SEE ALSO
+.BR rapid-gui (6),
+.BR spring (6)
+.SH AUTHOR
+Tobi Vollebregt <tobivollebregt@gmail.com>
+.PP
+This manual page was written by Jan Dittberner <jandd@debian.org>, for
+the Debian project (but may be used by others).
