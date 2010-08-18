@@ -14,8 +14,9 @@ development copies of modules (relative to this script) are picked up first.""" 
 		sys.exit(1)
 
 	# Cloak =)
+	# (i.e. remove the `main' function from the global scope)
 	global main
-	main = None
+	del main
 
 	# Load module by filename after first correcting sys.argv
 	sys.argv = sys.argv[1:]
