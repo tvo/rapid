@@ -13,7 +13,9 @@ except:
 		"Please use your package manager to install PyQt4 and then run rapid-gui again.'")
 	sys.exit(1)
 
-if __name__ == '__main__':
+
+def main():
+	""" PyQt4 GUI entry point."""
 	#we could probably share this parser between cli and gui ...
 	parser = OptionParser()
 
@@ -28,9 +30,9 @@ if __name__ == '__main__':
 	parser.add_option('--no-unitsync',
 		action='store_false', dest='unitsync',
 		help='Do not use unitsync.')
-		
+
 	(options, args) = parser.parse_args()
-	
+
 	if options.datadir:
 		init(options.datadir)
 	elif options.unitsync:
@@ -40,8 +42,12 @@ if __name__ == '__main__':
 	else:
 		print 'No data directory specified. Specify one using either --datadir or --unitsync.'
 		print
-		
+
 	app = QtGui.QApplication(['RapidGUI'])
 	window = RapidGUI()
 	window.show()
 	app.exec_()
+
+
+if __name__ == '__main__':
+	main()

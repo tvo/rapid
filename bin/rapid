@@ -9,7 +9,7 @@ from rapid.main import *
 from rapid.unitsync.api import get_writable_data_directory
 
 
-usage = """Usage: %prog [options] <verb> [<argument>]
+USAGE = """Usage: %prog [options] <verb> [<argument>]
 
 Where verb is one of:
  * upgrade: Install the latest package for all pinned tags.
@@ -32,9 +32,10 @@ Examples:
 %prog upgrade          # upgrade all pinned tags"""
 
 
-if __name__ == '__main__':
+def main():
+	""" Commandline interface entry point."""
 	logging.basicConfig(level = logging.INFO, stream = sys.stdout, format = '%(message)s')
-	parser = OptionParser(usage=usage)
+	parser = OptionParser(usage=USAGE)
 
 	parser.add_option('--datadir',
 		action='store', dest='datadir',
@@ -51,10 +52,13 @@ if __name__ == '__main__':
 	(options, args) = parser.parse_args()
 
 	def usage():
+		""" Display usage and exit."""
 		parser.print_usage()
 		sys.exit(1)
 
 	def req_arg():
+		""" Returns the next positional argument or
+		displays an error and exits if there are no arguments left."""
 		if len(args) < 1:
 			print 'Not enough arguments to operation.'
 			print
@@ -62,6 +66,8 @@ if __name__ == '__main__':
 		return args.pop(0)
 
 	def opt_arg():
+		""" Returns the next positional argument or
+		the empty string if there are no arguments left."""
 		if len(args) >= 1:
 			return args.pop(0)
 		return ''
@@ -112,3 +118,7 @@ if __name__ == '__main__':
 		print 'Unknown operation: ' + verb
 		print
 		usage()
+
+
+if __name__ == '__main__':
+	main()
