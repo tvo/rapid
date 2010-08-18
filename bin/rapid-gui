@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from rapid.gui import RapidGUI
+from optparse import OptionParser
+from rapid.main import init
 try:
 	from PyQt4 import QtGui
 except:
@@ -11,6 +13,33 @@ except:
 	sys.exit(1)
 
 if __name__ == '__main__':
+	#we could probably share this parser between cli and gui ...
+	parser = OptionParser()
+
+	parser.add_option('--datadir',
+		action='store', dest='datadir',
+		help='Override the default data directory. '
+			'(~/.spring on Linux or the one reported by unitsync on Windows)')
+	parser.add_option('--unitsync',
+		action='store_true', dest='unitsync',
+		help='Use unitsync to locate the data directory Spring uses.',
+		default = (os.name == 'nt'))
+	parser.add_option('--no-unitsync',
+		action='store_false', dest='unitsync',
+		help='Do not use unitsync.')
+		
+	(options, args) = parser.parse_args()
+	
+	if options.datadir:
+		init(options.datadir)
+	elif options.unitsync:
+		init(get_writable_data_directory())
+	elif os.name == 'posix':
+		init(os.path.expanduser('~/.spring'))
+	else:
+		print 'No data directory specified. Specify one using either --datadir or --unitsync.'
+		print
+		
 	app = QtGui.QApplication(['RapidGUI'])
 	window = RapidGUI()
 	window.show()
