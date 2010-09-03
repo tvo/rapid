@@ -15,9 +15,15 @@ log = logging.getLogger('root')
 
 
 class TextUserInteraction:
+	def __init__(self, force=False):
+		self.force = force
+
 	def confirm(self, text):
 		""" Ask the user for confirmation."""
-		return raw_input(text + ' [y/N]: ').startswith('y')
+		if self.force:
+			return True
+		else:
+			return raw_input(text + ' [y/N]: ').startswith('y')
 
 	def _to_i_bounds_check(self, text, lower, upper):
 		i = int(text)
@@ -62,12 +68,10 @@ class TextUserInteraction:
 		print
 
 
-ui = TextUserInteraction()
-
-
-def init(data_dir):
+def init(data_dir, _ui):
 	"""  Create rapid module."""
-	global spring_dir, pool_dir, rapid
+	global spring_dir, pool_dir, rapid, ui
+	ui = _ui
 
 	log.info('Using data directory: %s', data_dir)
 	rapid.set_spring_dir(data_dir)

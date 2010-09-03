@@ -3,7 +3,7 @@
 
 from rapid.gui import RapidGUI
 from optparse import OptionParser
-from rapid.main import init
+from rapid.main import init, TextUserInteraction
 import os
 try:
 	from PyQt4 import QtGui
@@ -33,12 +33,16 @@ def main():
 
 	(options, args) = parser.parse_args()
 
+	# TODO: QtUserInteraction should be written and used here.
+	# (+ some more refactors to allow a graphical progress bar too.)
+	ui = TextUserInteraction()
+
 	if options.datadir:
-		init(options.datadir)
+		init(options.datadir, ui)
 	elif options.unitsync:
-		init(get_writable_data_directory())
+		init(get_writable_data_directory(), ui)
 	elif os.name == 'posix':
-		init(os.path.expanduser('~/.spring'))
+		init(os.path.expanduser('~/.spring'), ui)
 	else:
 		print 'No data directory specified. Specify one using either --datadir or --unitsync.'
 		print

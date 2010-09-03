@@ -48,6 +48,9 @@ def main():
 	parser.add_option('--no-unitsync',
 		action='store_false', dest='unitsync',
 		help='Do not use unitsync.')
+	parser.add_option('-y', '--yes',
+		action='store_true', dest='force',
+		help='Answer all confirmations with yes. MAY BE DANGEROUS!')
 
 	(options, args) = parser.parse_args()
 
@@ -77,12 +80,14 @@ def main():
 
 	verb = args.pop(0)
 
+	ui = TextUserInteraction(options.force)
+
 	if options.datadir:
-		init(options.datadir)
+		init(options.datadir, ui)
 	elif options.unitsync:
-		init(get_writable_data_directory())
+		init(get_writable_data_directory(), ui)
 	elif os.name == 'posix':
-		init(os.path.expanduser('~/.spring'))
+		init(os.path.expanduser('~/.spring'), ui)
 	else:
 		print 'No data directory specified. Specify one using either --datadir or --unitsync.'
 		print
