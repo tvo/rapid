@@ -187,12 +187,12 @@ def list_packages(searchterm, available):
 	""" List all packages whose name matches searchterm."""
 	s = searchterm.lower()
 	ui.output_header('Installed packages:')
-	for p in rapid.packages:
+	for p in sorted(rapid.packages, key = lambda p: p.name):
 		if p.installed and s in p.name.lower():
 			ui.output_detail('  %-40s (%s)' % (p.name, ', '.join(p.tags)))
 	if available:
 		ui.output_header('Available packages:')
-		for p in rapid.packages:
+		for p in sorted(rapid.packages, key = lambda p: p.name):
 			if not p.installed and s in p.name.lower():
 				ui.output_detail('  %-40s (%s)' % (p.name, ', '.join(p.tags)))
 
@@ -201,7 +201,7 @@ def list_tags(searchterm, available):
 	""" List all tags which match searchterm."""
 	s = searchterm.lower()
 	ui.output_header('Pinned tags:')
-	for tag in rapid.pinned_tags:
+	for tag in sorted(rapid.pinned_tags):
 		if s in tag.lower():
 			p = rapid.packages[tag]
 			if p:
@@ -210,7 +210,7 @@ def list_tags(searchterm, available):
 				ui.output_detail('  %-40s [dangling tag]' % tag)
 	if available:
 		ui.output_header('Available tags:')
-		for tag in rapid.tags:
+		for tag in sorted(rapid.tags):
 			if s in tag.lower() and s not in rapid.pinned_tags:
 				p = rapid.packages[tag]
 				ui.output_detail('  %-40s (%s)' % (tag, p.name))
