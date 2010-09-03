@@ -37,7 +37,7 @@ class TextUserInteraction:
 		print header
 		for i in range(len(options)):
 			print '%2i.  %s' % (i + 1, options[i])
-		which = raw_input(question + " [enter number(s) or 'all']: ")
+		which = raw_input(question + ' [enter number(s) or "all"]: ')
 		if which.lower().strip() == 'all':
 			return options
 		which = re.split(r'[\s,]+', which)
@@ -46,7 +46,7 @@ class TextUserInteraction:
 			which = [self._to_i_bounds_check(x, 1, n) - 1 for x in which]
 		except (ValueError, IndexError) as e:
 			print type(e).__name__ + ':', str(e)
-			sys.exit(1)
+			return []
 		return [options[x] for x in which]
 
 	def output_header(self, text):
@@ -87,15 +87,15 @@ def select(noun, needle, haystack):
 	selected = filter(lambda s: n in str(s).lower(), haystack)
 
 	if len(selected) == 0:
-		log.error('No %ss matching %s found.', noun, needle)
-		sys.exit(1)
+		log.error('No %ss matching "%s" found.', noun, needle)
+		return selected
 
 	if len(selected) >= 100:
-		log.error('100 or more matching %ss found, please narrow your search.', noun)
-		sys.exit(1)
+		log.error('100 or more %ss matching "%s" found, please narrow your search.', noun, needle)
+		return []
 
 	if len(selected) > 1:
-		return ui.choose_many('Multiple %ss found:' % noun, selected, 'Which %s do you mean?' % noun)
+		return ui.choose_many('Multiple %ss matching "%s" found:' % (noun, needle), selected, 'Which %s do you mean?' % noun)
 
 	return selected
 

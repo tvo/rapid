@@ -93,15 +93,32 @@ def main():
 		print
 		usage()
 
-	if verb == 'pin':
-		pin(req_arg())
-	elif verb == 'unpin':
-		unpin(req_arg())
-	elif verb == 'install':
-		install(req_arg())
-	elif verb == 'uninstall':
-		uninstall(req_arg())
-	elif verb == 'list-packages':
+	# Loop conditions are at the end.
+	handled = True
+	while True:
+		# Commands which are applied to all subsequent arguments.
+		# (e.g. `pin tag1 tag2 tag3' pins all three tags..)
+		if verb == 'pin':
+			pin(req_arg())
+		elif verb == 'unpin':
+			unpin(req_arg())
+		elif verb == 'install':
+			install(req_arg())
+		elif verb == 'uninstall':
+			uninstall(req_arg())
+		else:
+			handled = False
+			break
+
+		# Unless we ran out of arguments, repeat the same operation
+		# on the next argument.
+		if len(args) == 0:
+			break
+		else:
+			print '---'
+
+	# Commands which have a fixed number of arguments.
+	if verb == 'list-packages':
 		list_packages(opt_arg(), True)
 	elif verb == 'list-installed-packages':
 		list_packages(opt_arg(), False)
@@ -119,7 +136,7 @@ def main():
 		collect_pool()
 	elif verb == 'make-sdd':
 		make_sdd(req_arg(), req_arg())
-	else:
+	elif not handled:
 		print 'Unknown operation: ' + verb
 		print
 		usage()
