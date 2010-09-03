@@ -19,6 +19,13 @@ class TextUserInteraction:
 		""" Ask the user for confirmation."""
 		return raw_input(text + ' [y/N]: ').startswith('y')
 
+	def _to_i_bounds_check(self, text, lower, upper):
+		i = int(text)
+		if i < lower or i > upper:
+			# raise IndexError with standard message
+			arr = [] ; arr[i]
+		return i
+
 	def choose_many(self, header, options, question):
 		""" Let the user choose multiple options from a list."""
 		print header
@@ -29,9 +36,12 @@ class TextUserInteraction:
 			return options
 		which = re.split(r'[\s,]+', which)
 		try:
-			return [options[int(x)] for x in which]
-		except ValueError:
+			n = len(options)
+			which = [self._to_i_bounds_check(x, 1, n) - 1 for x in which]
+		except (ValueError, IndexError) as e:
+			print type(e).__name__ + ':', str(e)
 			sys.exit(1)
+		return [options[x] for x in which]
 
 	def output_header(self, text):
 		""" Output the header of a list/table."""
