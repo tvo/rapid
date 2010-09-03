@@ -348,10 +348,11 @@ class Repository(object):
 			tag, hex, deps, name = row[0], row[1], psv(row[2]), row[3]
 			if not name in packages:
 				packages[name] = Package(hex, name, deps, repository = self)
-			assert (packages[name].hex == hex)
-			assert (packages[name].dependencies == deps)
-			assert (packages[name].name == name)
-			if tag:
+			assert packages[name].name == name
+			# Ignore package if the name was already present, but with
+			# different hex or different dependencies. (#9)
+			if (packages[name].hex == hex and
+				packages[name].dependencies == deps and tag):
 				packages[name].tags.add(tag)
 
 		with closing(gzip.open(self.versions_gz)) as f:
@@ -667,9 +668,14 @@ class TestRapid(unittest.TestCase):
 			self.rapid = Rapid(self.downloader)
 			www = self.downloader.www
 			www[master_url] = gzip_string(',http://ts1,,\n')
-			www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,dependency,XTA 9.6\n,5678,,dependency\n')
+			# The last two packages have an identical name. This should not
+			# actually happen in practice (leaves no good way to normalize
+			# versions.gz), though it did happen once. (#9)
+			# So it's present here to test that rapid handles it properly.
+			www['http://ts1/versions.gz'] = gzip_string('xta:latest,1234,dependency,XTA 9.6\n,5678,,dependency\n,90AB,,dependency\n')
 			www['http://ts1/packages/1234.sdp'] = gzip_string('\3foo' + binascii.unhexlify('d41d8cd98f00b204e9800998ecf8427e') + 8 * '\0')
 			www['http://ts1/packages/5678.sdp'] = gzip_string('')
+			www['http://ts1/packages/90AB.sdp'] = gzip_string('')
 			www['http://ts1/streamer.cgi?1234'] = struct.pack('>L', len(gzip_string(''))) + gzip_string('')
 		else:
 			self.downloader = Downloader()
@@ -754,6 +760,9 @@ class TestRapid(unittest.TestCase):
 		self.downloader.www[master_url] = gzip_string('')
 		p = self.rapid.packages['xta:latest']
 		self.assertRaises(OfflineRepositoryException, lambda: p.files)
+
+	def test_issue_9_duplicate_package_name(self):
+		self.assertEqual('5678', self.rapid.packages['dependency'].hex)
 
 if __name__ == '__main__':
 	unittest.main()
