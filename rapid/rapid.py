@@ -401,6 +401,9 @@ class Package(object):
 		if repository:
 			self.cache_file = os.path.join(repository.package_cache_dir, self.hex + '.sdp')
 
+	def __str__(self):
+		return self.name
+
 	@property
 	def installed_path(self):
 		""" Return the path at which the package would be visible to Spring."""

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (C) 2010 Tobi Vollebregt
 
-import os, sys
+import os, re, sys
 import logging
 from optparse import OptionParser
 from rapid.main import *
@@ -48,6 +48,9 @@ def main():
 	parser.add_option('--no-unitsync',
 		action='store_false', dest='unitsync',
 		help='Do not use unitsync.')
+	parser.add_option('-r', '--regex',
+		action='store_true', dest='regex',
+		help='Use regular expressions instead of substring matches')
 	parser.add_option('-y', '--yes',
 		action='store_true', dest='force',
 		help='Answer all confirmations with yes. MAY BE DANGEROUS!')
@@ -81,6 +84,10 @@ def main():
 	verb = args.pop(0)
 
 	ui = TextUserInteraction(options.force)
+
+	if options.regex:
+		ui._select_core = (lambda needle, haystack:
+			[candidate for candidate in haystack if re.search(needle, str(candidate), re.I)])
 
 	if options.datadir:
 		init(options.datadir, ui)
