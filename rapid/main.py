@@ -20,10 +20,7 @@ class TextUserInteraction:
 
 	def confirm(self, text):
 		""" Ask the user for confirmation."""
-		if self.force:
-			return True
-		else:
-			return raw_input(text + ' [y/N]: ').startswith('y')
+		return self.force or raw_input(text + ' [y/N]: ').startswith('y')
 
 	def _to_i_bounds_check(self, text, lower, upper):
 		i = int(text)
@@ -48,6 +45,30 @@ class TextUserInteraction:
 			print type(e).__name__ + ':', str(e)
 			return []
 		return [options[x] for x in which]
+
+	def _select_core(self, needle, haystack):
+		""" Override/patch this to implement other search strategy.
+		This variant implements a simple case-insensitive substring search."""
+		n = needle.lower()
+		return filter(lambda s: n in str(s).lower(), haystack)
+
+	def select(self, noun, needle, haystack):
+		""" Select items from a list based on needle, and take appropriate
+		action based on the number of results this returns."""
+		selected = self._select_core(needle, haystack)
+
+		if len(selected) == 0:
+			print 'No %ss matching "%s" found.' % (noun, needle)
+			return selected
+
+		if len(selected) >= 100:
+			print '100 or more %ss matching "%s" found, please narrow your search.' % (noun, needle)
+			return []
+
+		if len(selected) > 1:
+			return self.choose_many('Multiple %ss matching "%s" found:' % (noun, needle), selected, 'Which %s do you mean?' % noun)
+
+		return selected
 
 	def output_header(self, text):
 		""" Output the header of a list/table."""
@@ -82,24 +103,6 @@ def init(data_dir, _ui):
 	rapid = rapid.Rapid()
 
 
-def select(noun, needle, haystack):
-	n = needle.lower()
-	selected = filter(lambda s: n in str(s).lower(), haystack)
-
-	if len(selected) == 0:
-		log.error('No %ss matching "%s" found.', noun, needle)
-		return selected
-
-	if len(selected) >= 100:
-		log.error('100 or more %ss matching "%s" found, please narrow your search.', noun, needle)
-		return []
-
-	if len(selected) > 1:
-		return ui.choose_many('Multiple %ss matching "%s" found:' % (noun, needle), selected, 'Which %s do you mean?' % noun)
-
-	return selected
-
-
 def pin_single(tag):
 	""" Pin a tag. This means any package having this tag will automatically be
 	    installed and upgraded."""
@@ -112,7 +115,7 @@ def pin_single(tag):
 
 def pin(searchterm):
 	""" Pin all tags matching searchterm and install the corresponding packages."""
-	for t in select('tag', searchterm, rapid.tags):
+	for t in ui.select('tag', searchterm, rapid.tags):
 		pin_single(t)
 		install_single(rapid.packages[t])
 
@@ -129,7 +132,7 @@ def unpin_single(tag):
 
 def unpin(searchterm):
 	""" Unpin all tags matching searchterm."""
-	for t in select('pinned tag', searchterm, rapid.pinned_tags):
+	for t in ui.select('pinned tag', searchterm, rapid.pinned_tags):
 		unpin_single(t)
 
 
@@ -147,7 +150,7 @@ def install_single(p, dep = False):
 
 def install(searchterm):
 	""" Install all packages matching searchterm."""
-	for name in select('name', searchterm, [p.name for p in rapid.packages]):
+	for name in ui.select('name', searchterm, [p.name for p in rapid.packages]):
 		install_single(rapid.packages[name])
 
 
@@ -179,7 +182,7 @@ def uninstall_single_plus_revdeps(p, dep = False):
 
 def uninstall(searchterm):
 	""" Uninstall all packages matching searchterm."""
-	for name in select('name', searchterm, [p.name for p in rapid.packages if p.installed]):
+	for name in ui.select('name', searchterm, [p.name for p in rapid.packages if p.installed]):
 		uninstall_single(rapid.packages[name])
 
 
