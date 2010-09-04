@@ -1,3 +1,4 @@
+v0.4.0, 2010-09-04 -- fix #1, #2, #8, #9, #10, new --yes and --regex options and more
 v0.3.3, 2010-08-18 -- fix #3 (rapid-gui fails to start) and #4 (man pages missing)
 v0.3.2, 2010-08-13 -- fix incorrect logging statement
 v0.3.1, 2010-08-13 -- fix package
