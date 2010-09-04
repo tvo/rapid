@@ -30,33 +30,45 @@ Why python 2.6? Simple answer: bitarray binary packages are not available yet fo
 
 # Usage
 
-    rapid <verb> [arguments...]
+    rapid [options...] <verb>  [arguments...]
 
 Where the different verbs and their arguments are:
 
  * `upgrade`: Install the latest package for all pinned tags.
  * `clean-upgrade`: Equivalent to 'upgrade' followed by 'uninstall-unpinned'.
- * `pin <tag>`: Pins a tag and installs the latest package for that tag.
- * `unpin <tag>`: Unpins a tag. Does not uninstall any packages.
- * `install <package>`: Install a package. Does not pin any tags.
- * `uninstall <package>`: Uninstall a package. Unpin its tag if any.
+ * `pin <tag(s)>`: Pins tags and installs the latest packages for those tags.
+ * `unpin <tag(s)>`: Unpins tags. Does not uninstall any packages.
+ * `install <package(s)>`: Install packages. Does not pin any tags.
+ * `uninstall <package(s)>`: Uninstall packages. Unpins their tags if any.
  * `list-tags [tag]`: List all tags that match *tag*.
  * `list-pinned-tags [tag]`: Idem, but only pinned tags.
- * `list-packages [package]`: List all packages whose name contains *argument*.
+ * `list-packages [package]`: List all packages whose name contains *package*.
  * `list-installed-packages [package]`: Idem, but only installed packages.
- * `uninstall-unpinned`: Keep only the pinned tags and all dependencies. Uninstall all other packages.
+ * `uninstall-unpinned`: Keep only the pinned tags and all dependencies.
  * `collect-pool`: Remove pool files not needed by any installed package.
- * `make-sdd <tag|package> <dir>`: Extract pool files of a package into `~/.spring/mods/<dir>`.
+ * `make-sdd <tag|package> <dir>`: Extract pool files of a package into
+        `~/.spring/mods/<dir>`.
 
-Usually when a verb has a tag or a package as argument, an exact match is not required. The `list-*` commands will list all packages/tags that contain the given string and other commands will ask you to disambiguate when multiple matching packages/tags were found.
-
-Examples:
+## Examples:
 
     rapid pin xta:latest   # installs latest XTA
     rapid pin s44:latest   # installs latest Spring: 1944
     rapid upgrade          # upgrade all pinned tags
 
-(the other commands are for advanced users mostly)
+Other commands are for power users mostly, e.g.:
+
+    rapid list-tags '^(?!ba).*:(latest|stable|test)$' --regex
+
+This displays all tags ending with ':latest', ':stable' or ':test', which do not start with the string 'ba'.
+
+## Options:
+
+ * -h, --help         show this help message and exit
+ * --datadir=DATADIR  Override the default data directory. (~/.spring on Linux or the one reported by unitsync on Windows)
+ * --unitsync         Use unitsync to locate the data directory Spring uses.
+ * --no-unitsync      Do not use unitsync.
+ * -r, --regex        Use regular expressions instead of substring matches for pin, unpin, install, uninstall and all list-* commands.
+ * -y, --yes          Answer all confirmations with yes. MAY BE DANGEROUS!
 
 # Bugs/quirks
 

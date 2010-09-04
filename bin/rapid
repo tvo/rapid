@@ -9,27 +9,36 @@ from rapid.main import *
 from rapid.unitsync.api import get_writable_data_directory
 
 
-USAGE = """Usage: %prog [options] <verb> [<argument>]
+USAGE = """Usage: %prog [options...] <verb>  [arguments...]
 
-Where verb is one of:
- * upgrade: Install the latest package for all pinned tags.
- * clean-upgrade: Equivalent to 'upgrade' followed by 'uninstall-unpinned'.
- * pin: Pins a tag and installs the latest package for that tag.
- * unpin: Unpins a tag. Does not uninstall any packages.
- * install: Install a package. Does not pin any tags.
- * uninstall: Uninstall a package. Unpin its tag if any.
- * list-tags: List all tags that contain <argument>.
- * list-pinned-tags: Idem, but only pinned tags.
- * list-packages: List all packages whose name contains <argument>.
- * list-installed-packages: Idem, but only installed packages.
- * uninstall-unpinned: Keep only the pinned tags and all dependencies.
- * collect-pool: Remove pool files not needed by any installed package.
- * make-sdd: Extract pool files into a .sdd archive.
+Where the different verbs and their arguments are:
+
+ * `upgrade`: Install the latest package for all pinned tags.
+ * `clean-upgrade`: Equivalent to 'upgrade' followed by 'uninstall-unpinned'.
+ * `pin <tag(s)>`: Pins tags and installs the latest packages for those tags.
+ * `unpin <tag(s)>`: Unpins tags. Does not uninstall any packages.
+ * `install <package(s)>`: Install packages. Does not pin any tags.
+ * `uninstall <package(s)>`: Uninstall packages. Unpins their tags if any.
+ * `list-tags [tag]`: List all tags that match *tag*.
+ * `list-pinned-tags [tag]`: Idem, but only pinned tags.
+ * `list-packages [package]`: List all packages whose name contains *package*.
+ * `list-installed-packages [package]`: Idem, but only installed packages.
+ * `uninstall-unpinned`: Keep only the pinned tags and all dependencies.
+ * `collect-pool`: Remove pool files not needed by any installed package.
+ * `make-sdd <tag|package> <dir>`: Extract pool files of a package into
+	`~/.spring/mods/<dir>`.
 
 Examples:
-%prog pin xta:latest   # installs latest XTA
-%prog pin s44:latest   # installs latest Spring: 1944
-%prog upgrade          # upgrade all pinned tags"""
+
+  %prog pin xta:latest   # installs latest XTA
+  %prog pin s44:latest   # installs latest Spring: 1944
+  %prog upgrade          # upgrade all pinned tags
+
+Other commands are for power users mostly, e.g.:
+
+  %prog list-tags '^(?!ba).*:(latest|stable|test)$' --regex
+    # This displays all tags ending with ':latest', ':stable' or ':test',
+    # which do not start with the string 'ba'."""
 
 
 def main():
@@ -50,7 +59,8 @@ def main():
 		help='Do not use unitsync.')
 	parser.add_option('-r', '--regex',
 		action='store_true', dest='regex',
-		help='Use regular expressions instead of substring matches')
+		help='Use regular expressions instead of substring matches for '
+		'pin, unpin, install, uninstall and all list-* commands.')
 	parser.add_option('-y', '--yes',
 		action='store_true', dest='force',
 		help='Answer all confirmations with yes. MAY BE DANGEROUS!')
