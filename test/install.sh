@@ -4,14 +4,14 @@
 
 function indent {
 	$@ 2>&1 | sed 's/^/	/g'
-	return ${PIPESTATUS[0]}
 }
 
 function test {
-	indent rapid && echo SUCCESS || echo FAILURE
+	indent rapid
 }
 
 DIR=.test
+PACKAGE=rapid-spring
 
 echo "setting up virtualenv"
 indent virtualenv $DIR
@@ -19,12 +19,12 @@ cd $DIR
 . bin/activate
 
 echo "trying pip"
-indent pip install rapid-spring
+indent pip install $PACKAGE
 test
-echo y | indent pip uninstall rapid-spring
+echo y | indent pip uninstall $PACKAGE
 
 echo "trying easy_install"
-indent easy_install rapid-spring
+indent easy_install $PACKAGE
 test
 
 echo "cleaning"
