@@ -11,7 +11,7 @@ You can use *pip* to get the package from the [Python Package Index](http://pypi
 
     pip install rapid-spring --upgrade
 
-If you do not have the script *pip* available then use your distribution's package manager to install the python-setuptools (or similar) package.
+If you do not have the script *pip* available then use your distribution's package manager to install the python-pip (or similar) package.
 
     apt-get install python-pip   # Debian/Ubuntu
     yum install python-pip       # Fedora
