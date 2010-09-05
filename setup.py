@@ -12,5 +12,7 @@ setup(
     license='LICENSE.txt',
     description='spring content downloading',
     long_description=open('README.txt').read(),
-    requires=['bitarray'],
+    # running `setup.py sdist' gives a warning about this, but still
+    # install_requires is the only thing that works with pip/easy_install...
+    install_requires=['bitarray'],
 )
