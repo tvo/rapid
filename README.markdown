@@ -86,3 +86,7 @@ Please file any other bugs you find on [the issue tracker](http://github.com/tvo
  * Improve the GUI (`rapid-gui`)
  * Add GUI progressbar, even for the commandline script (may be useful when integrating it in another app)
  * Machine friendly progressbar, so other apps can parse it and render their own progressbar
+
+---
+
+Exported from git commit $Format:%H$
