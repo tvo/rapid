@@ -53,8 +53,9 @@ git archive --format=tar $VERSION | tar x -C $DIR
 
 cd $DIR
 	# re-do this, as $Format:...$ attributes in README.markdown may have changed
-	echo "creating README.txt..."
-	make README.txt
+	# rm needed because git archive messes with file modification times..
+	echo "recreating README.txt..."
+	rm -f README.txt && make README.txt
 
 	echo "creating and uploading source distribution..."
 	python setup.py sdist upload
