@@ -89,4 +89,4 @@ Please file any other bugs you find on [the issue tracker](http://github.com/tvo
 
 ---
 
-Exported from git commit $Format:%H %d$
+Exported from git commit $Format:%H%d$
