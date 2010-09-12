@@ -1,3 +1,4 @@
+v0.4.3, 2010-09-12 -- README update
 v0.4.2, 2010-09-12 -- release script test
 v0.4.1, 2010-09-05 -- attempt to fix bitarray dependency, switch README to pip
 v0.4.0, 2010-09-04 -- fix #1, #2, #8, #9, #10, new --yes and --regex options and more
