@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import os, sys, main, models
 from PyQt4 import QtCore, QtGui

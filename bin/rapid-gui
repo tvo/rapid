@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from rapid.gui import RapidGUI
 from optparse import OptionParser

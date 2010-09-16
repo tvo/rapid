@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # rapid-spring documentation build configuration file, created by
 # sphinx-quickstart on Wed May  5 09:47:26 2010.
 #
