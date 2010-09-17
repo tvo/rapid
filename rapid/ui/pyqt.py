@@ -1,6 +1,6 @@
 # Author: Tobi Vollebregt
 
-from rapid.gui import RapidGUI
+from .pyqt_gui import RapidGUI
 from optparse import OptionParser
 from rapid.main import init, TextUserInteraction
 import os

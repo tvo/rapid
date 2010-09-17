@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import os, sys, main, models
+import os, sys
+import rapid.main as main
+import rapid.models as models
 from PyQt4 import QtCore, QtGui
 
 class DownloadDialog(QtGui.QProgressDialog):
