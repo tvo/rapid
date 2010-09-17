@@ -1,8 +1,9 @@
 # Author: Tobi Vollebregt
 
 from .pyqt_gui import RapidGUI
+from .tui import TextUserInteraction
 from optparse import OptionParser
-from rapid.main import init, TextUserInteraction
+from rapid.main import init
 import os
 try:
 	from PyQt4 import QtGui
