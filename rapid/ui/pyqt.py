@@ -4,6 +4,7 @@ from .pyqt_gui import RapidGUI
 from .tui import TextUserInteraction
 from optparse import OptionParser
 from rapid.main import init
+from rapid.unitsync.api import get_writable_data_directory
 import os
 try:
 	from PyQt4 import QtGui
