@@ -64,18 +64,17 @@ class TestDownloaderCore(object):
 	test_file = os.path.join(test_dir, 'hello')
 	config_file = os.path.join(test_dir, 'test.cfg')
 
-	def setUp(self, downloader):
+	def setUp(self):
 		if os.path.exists(self.test_dir):
 			shutil.rmtree(self.test_dir)
 		os.mkdir(self.test_dir)
-		self.downloader = downloader
 
 	def tearDown(self):
 		shutil.rmtree(self.test_dir)
 
 	def test_onetime_get_request(self):
-		self.downloader.onetime_get_request(self.url, self.test_file)
-		self.downloader.onetime_get_request(self.url, self.test_file)
+		self.get_downloader().onetime_get_request(self.url, self.test_file)
+		self.get_downloader().onetime_get_request(self.url, self.test_file)
 		self.assertTrue(os.path.exists(self.test_file),
 			'downloaded file should exist')
 		self.assertEqual('Hello world', file(self.test_file).read(),
@@ -84,17 +83,17 @@ class TestDownloaderCore(object):
 			'exactly one HTTP request should have been made')
 
 	def test_http_304_not_modified(self):
-		self.downloader.conditional_get_request(self.url, self.test_file)
-		self.assertFalse(self.downloader._304,
-			'first request should be 200 OK')
-		self.downloader.conditional_get_request(self.url, self.test_file)
-		self.assertTrue(self.downloader._304,
-			'second request should be 304 Not Modified')
+		d = self.get_downloader()
+		d.conditional_get_request(self.url, self.test_file)
+		self.assertFalse(d._304, 'first request should be 200 OK')
+		d = self.get_downloader()
+		d.conditional_get_request(self.url, self.test_file)
+		self.assertTrue(d._304, 'second request should be 304 Not Modified')
 		self.assertEqual(2, self.get_request_count(),
 			'exactly two HTTP requests should have been made')
 
 	def test_post(self):
-		remote = self.downloader.post(self.url + 'POST', 'payload')
+		remote = self.get_downloader().post(self.url + 'POST', 'payload')
 		self.assertEqual('payload', remote.read())
 
 
@@ -102,7 +101,7 @@ class TestDownloader(unittest.TestCase, TestDownloaderCore):
 	'''test the Downloader class against the MockHTTPServerThread'''
 
 	def setUp(self):
-		TestDownloaderCore.setUp(self, Downloader(TestDownloader.config_file))
+		TestDownloaderCore.setUp(self)
 		self.httpd = MockHTTPServerThread()
 		self.url = 'http://localhost:%d/' % self.httpd.port
 
@@ -110,8 +109,18 @@ class TestDownloader(unittest.TestCase, TestDownloaderCore):
 		self.httpd.shutdown()
 		TestDownloaderCore.tearDown(self)
 
+	def get_downloader(self):
+		return Downloader(self.config_file)
+
 	def get_request_count(self):
 		return self.httpd.request_count
+
+	def test_config_is_not_shared(self):
+		self.get_downloader().conditional_get_request(self.url, self.test_file)
+		# create new downloader:
+		d = Downloader(self.config_file + '.2')
+		d.conditional_get_request(self.url, self.test_file)
+		self.assertFalse(d._304, 'second request should be 200 OK')
 
 
 class TestMockDownloader(unittest.TestCase, TestDownloaderCore):
@@ -119,10 +128,14 @@ class TestMockDownloader(unittest.TestCase, TestDownloaderCore):
 
 	def setUp(self):
 		self.url = '/'
-		TestDownloaderCore.setUp(self, MockDownloader({
+		self.downloader = MockDownloader({
 			'/': 'Hello world',
 			'/POST': 'payload'
-		}))
+		}) 
+		TestDownloaderCore.setUp(self)
+
+	def get_downloader(self):
+		return self.downloader
 
 	def get_request_count(self):
 		return self.downloader.request_count

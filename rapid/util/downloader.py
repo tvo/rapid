@@ -31,11 +31,10 @@ class NotModifiedHandler(urllib2.BaseHandler):
 ################################################################################
 
 class Downloader:
-	__config = ConfigParser.RawConfigParser()
-	_304 = False    # for unit tests
-
 	def __init__(self, config_filename):
 		#print ('reading configuration from ' + config_filename)
+		self.__config = ConfigParser.RawConfigParser()
+		self._304 = False    # for unit tests
 		self.__config_filename = config_filename
 		self.__config.read(config_filename)
 
