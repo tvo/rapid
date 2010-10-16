@@ -109,12 +109,19 @@ class MockDownloader:
 	def __init__(self, www = None):
 		self.www = www or {}
 		self.visited = set()
+		self.request_count = 0
 		self._304 = False
 
 	def onetime_get_request(self, url, filename):
+		if os.path.exists(filename):
+			return
+
+		self.request_count += 1
 		atomic_write(filename, self.www[url])
 
 	def conditional_get_request(self, url, filename):
+		self.request_count += 1
+
 		if url in self.visited:
 			self._304 = True
 			return
