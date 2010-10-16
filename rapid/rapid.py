@@ -9,7 +9,7 @@ from StringIO import StringIO
 import binascii, gzip, os, shutil, struct, weakref
 import ConfigParser
 
-from downloader import Downloader, atomic_write
+from util.downloader import Downloader, atomic_write
 
 ################################################################################
 

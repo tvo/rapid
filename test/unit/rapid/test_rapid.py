@@ -8,7 +8,7 @@ import unittest
 import rapid.rapid as rapid
 from rapid.rapid import DependencyException, DetachedPackageException, OfflineRepositoryException, \
 	PinnedTags, Rapid, mkdir_p, set_spring_dir, gzip_string, master_url
-from rapid.downloader import MockDownloader
+from rapid.util.downloader import MockDownloader
 
 
 class TestPinnedTags(unittest.TestCase):
