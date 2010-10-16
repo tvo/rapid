@@ -4,7 +4,7 @@ import os, re, sys
 import logging
 from optparse import OptionParser
 from rapid.main import *
-from .tui import TextUserInteraction
+from .interaction import TextUserInteraction
 from rapid.unitsync.api import get_writable_data_directory
 
 

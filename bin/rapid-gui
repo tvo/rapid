@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2010 Tobi Vollebregt
 
-from rapid.ui.pyqt import main
+from rapid.ui.qt.main import main
 
 if __name__ == '__main__':
 	main()

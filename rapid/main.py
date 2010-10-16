@@ -2,7 +2,7 @@
 # Copyright (C) 2010 Tobi Vollebregt
 
 from contextlib import closing
-from progressbar import ProgressBar
+from .ui.text.progressbar import ProgressBar
 import rapid
 import gzip, os
 import logging

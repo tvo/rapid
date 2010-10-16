@@ -1,7 +1,7 @@
 # Author: Tobi Vollebregt
 
-from .pyqt_gui import RapidGUI
-from .tui import TextUserInteraction
+from .gui import RapidGUI
+from rapid.ui.text.interaction import TextUserInteraction
 from optparse import OptionParser
 from rapid.main import init
 from rapid.unitsync.api import get_writable_data_directory

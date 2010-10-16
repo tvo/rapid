@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2010 Tobi Vollebregt
 
-from rapid.ui.cmdline import main
+from rapid.ui.text.main import main
 
 if __name__ == '__main__':
 	main()

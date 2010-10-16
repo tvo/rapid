@@ -4,7 +4,7 @@
 import sys
 import unittest
 from cStringIO import StringIO
-from rapid.ui.tui import TextUserInteraction
+from rapid.ui.text.interaction import TextUserInteraction
 
 
 OPTIONS = ['foo', 'bar', 'baz']

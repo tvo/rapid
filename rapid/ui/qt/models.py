@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from PyQt4 import QtCore, QtGui
-import rapid,main
+from rapid import main, rapid
 
 class BaseRapidModel(QtGui.QStandardItemModel):
 	def __init__(self,parent):
