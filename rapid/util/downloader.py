@@ -4,6 +4,7 @@
 from contextlib import closing
 import ConfigParser
 import os
+import time
 import urllib2
 
 ################################################################################
@@ -62,10 +63,17 @@ class Downloader:
 		with closing(urllib2.urlopen(request, timeout = timeout)) as remote:
 			atomic_write(filename, remote.read())
 
-	def conditional_get_request(self, url, filename):
+	def conditional_get_request(self, url, filename, rate_limit = None):
 		section = url + ',' + filename
 		etag = self.__config_get(section, 'etag')
 		last_modified = self.__config_get(section, 'last_modified')
+		last_requested = self.__config_get(section, 'last_requested')
+
+		# rate limiting
+		if (rate_limit and last_requested and
+			time.time() - float(last_requested) <= rate_limit and
+			os.path.exists(filename)):
+			return
 
 		request = urllib2.Request(url, unverifiable=True)
 
@@ -80,6 +88,7 @@ class Downloader:
 				headers = remote.info()
 				self.__config_set(section, 'etag', headers.getheader('ETag'))
 				self.__config_set(section, 'last_modified', headers.getheader('Last-Modified'))
+				self.__config_set(section, 'last_requested', time.time())
 				self.__write_config()
 
 				if hasattr(remote, 'code') and remote.code == 304:
@@ -107,7 +116,7 @@ from StringIO import StringIO
 class MockDownloader:
 	def __init__(self, www = None):
 		self.www = www or {}
-		self.visited = set()
+		self.last_visited = {}
 		self.request_count = 0
 		self._304 = False
 
@@ -118,15 +127,20 @@ class MockDownloader:
 		self.request_count += 1
 		atomic_write(filename, self.www[url])
 
-	def conditional_get_request(self, url, filename):
+	def conditional_get_request(self, url, filename, rate_limit = None):
+		if (rate_limit and url in self.last_visited and
+			time.time() - self.last_visited[url] <= rate_limit and
+			os.path.exists(filename)):
+			return
+
 		self.request_count += 1
 
-		if url in self.visited:
+		if url in self.last_visited:
 			self._304 = True
 			return
 
 		atomic_write(filename, self.www[url])
-		self.visited.add(url)
+		self.last_visited[url] = time.time()
 
 	def post(self, url, data):
 		def info():

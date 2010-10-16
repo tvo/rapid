@@ -1,7 +1,9 @@
 # Copyright (C) 2010 Tobi Vollebregt
 
 import unittest
-import os, shutil
+import os
+import shutil
+import time
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from rapid.util.downloader import Downloader, MockDownloader
@@ -96,6 +98,20 @@ class TestDownloaderCore(object):
 		remote = self.get_downloader().post(self.url + 'POST', 'payload')
 		self.assertEqual('payload', remote.read())
 
+	def test_rate_limited_get_request(self):
+		self.get_downloader().conditional_get_request(self.url, self.test_file, 60)
+		self.get_downloader().conditional_get_request(self.url, self.test_file, 60)
+		self.assertEqual(1, self.get_request_count())
+		# test whether it will download again after enough time passed
+		old_time = time.time
+		try:
+			# travel to the future and download again
+			time.time = lambda: old_time() + 90
+			self.get_downloader().conditional_get_request(self.url, self.test_file, 60)
+		finally:
+			time.time = old_time 
+		self.assertEqual(2, self.get_request_count())
+
 
 class TestDownloader(unittest.TestCase, TestDownloaderCore):
 	'''test the Downloader class against the MockHTTPServerThread'''
@@ -133,6 +149,9 @@ class TestMockDownloader(unittest.TestCase, TestDownloaderCore):
 			'/POST': 'payload'
 		}) 
 		TestDownloaderCore.setUp(self)
+
+	def tearDown(self):
+		TestDownloaderCore.tearDown(self)
 
 	def get_downloader(self):
 		return self.downloader

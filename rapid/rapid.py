@@ -11,6 +11,10 @@ import ConfigParser
 
 from util.downloader import Downloader, atomic_write
 
+# rapid hits the servers at worst once every..
+MASTER_RATE_LIMIT = 60 * 60     # ..one hour
+REPOSITORY_RATE_LIMIT = 5 * 60  # ..five minutes  
+
 ################################################################################
 
 # content_dir : Storage for temporary files (repos.gz, versions.gz)
@@ -104,7 +108,7 @@ class RepositorySource(object):
 		""" Download and return list of repositories."""
 
 		# Collect OnlineRepositories
-		self.downloader.conditional_get_request(master_url, self.repos_gz)
+		self.downloader.conditional_get_request(master_url, self.repos_gz, MASTER_RATE_LIMIT)
 		with closing(gzip.open(self.repos_gz)) as f:
 			unique = set(x.split(',')[1] for x in f)
 			self.__repositories = [OnlineRepository(os.path.join(self.cache_dir, urlparse(x).netloc), self.downloader, x) for x in unique]
@@ -384,7 +388,7 @@ class OnlineRepository(Repository):
 
 	def update(self):
 		""" Update of the list of packages of this repository."""
-		self.downloader.conditional_get_request(self.url + '/versions.gz', self.versions_gz)
+		self.downloader.conditional_get_request(self.url + '/versions.gz', self.versions_gz, REPOSITORY_RATE_LIMIT)
 
 ################################################################################
 
