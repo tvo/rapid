@@ -1,4 +1,9 @@
 from cx_Freeze import setup, Executable
+import sys
+
+guibase = None
+if sys.platform == "win32":
+    guibase = "Win32GUI"
 
 setup(
     name='rapid-spring',
@@ -14,5 +19,5 @@ setup(
     # running `setup.py sdist' gives a warning about this, but still
     # install_requires is the only thing that works with pip/easy_install...
     install_requires=['bitarray'],
-    executables = [Executable("bin/rapid"),Executable("bin/rapid-gui") ]
+    executables = [Executable("bin/rapid"),Executable("bin/rapid-gui", base=guibase) ]
 )
