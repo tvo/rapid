@@ -14,5 +14,5 @@ setup(
     # running `setup.py sdist' gives a warning about this, but still
     # install_requires is the only thing that works with pip/easy_install...
     install_requires=['bitarray'],
-    executables = [Executable("bin/rapid")]
+    executables = [Executable("bin/rapid"),Executable("bin/rapid-gui") ]
 )
