@@ -73,9 +73,12 @@ class RapidListWidgetBase(QtGui.QWidget):
 		self.proxyView.setSortingEnabled(True)
 		self.proxyView.sortByColumn(0, QtCore.Qt.AscendingOrder)
 		self.proxyView.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+		self.filterEdit = QtGui.QLineEdit(self.parent)
 		mainLayout = QtGui.QVBoxLayout()
-		mainLayout.addWidget(self.proxyView)
+		mainLayout.addWidget(self.proxyView,stretch=1)
+		mainLayout.addWidget(self.filterEdit,stretch=0)
 		self.setLayout(mainLayout)
+		self.filterEdit.textChanged.connect( self.proxyModel.setFilterFixedString )
 
 class InstalledRapidListWidget(RapidListWidgetBase):
 	def __init__(self,parent):
