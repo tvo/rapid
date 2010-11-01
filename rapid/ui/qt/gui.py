@@ -2,7 +2,7 @@
 
 import os, sys
 from rapid import main
-from . import models
+import models
 from PyQt4 import QtCore, QtGui
 
 class DownloadDialog(QtGui.QProgressDialog):
@@ -94,6 +94,33 @@ class InstalledRapidListWidget(RapidListWidgetBase):
 
 	def doubleClicked(self,modelIndex):
 		item = self.sourceModel.itemFromIndex( self.proxyModel.mapToSource( modelIndex ) )
+		tag = str(item.text())
+		#FIXME: we get multiple tags. Which do we choose?
+		try:
+			p = main.rapid.packages[tag.split(',')[0]]
+		except KeyError:
+			p = main.rapid.packages[tag.tag_or_name]
+		
+		if not p.can_be_uninstalled:
+			msg = QtGui.QMessageBox(self.parent)
+			#FIXME: this message is fubar
+			msg.setText("There are tags installed that depend on the tag that is to be uninstalled.")
+			msg.setInformativeText("Remove dependent tags?")
+			msg.setStandardButtons(QtGui.QMessageBox.Ok |  QtGui.QMessageBox.Cancel)
+			msg.setDefaultButton( QtGui.QMessageBox.Cancel )
+			if msg.exec_() == QtGui.QMessageBox.Ok:
+				for rdep in p.reverse_dependencies:
+					rdep.uninstall()
+			else :
+				return
+		try:
+			p.uninstall()
+			QtGui.QMessageBox.information( self.parent, "Done","%s was removed"%p.name )
+			self.sourceModel.reload()
+		except Exception, e:
+			print e
+			QtGui.QMessageBox.critical( self.parent, "Error", "Removing %s failed\n%s"%(p.name,str(e)) )
+		
 
 class AvailableRapidListWidget(RapidListWidgetBase):
 	def __init__(self,parent):
