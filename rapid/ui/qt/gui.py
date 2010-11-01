@@ -148,7 +148,7 @@ class MainRapidWidget(QtGui.QWidget):
 		leftLayout.addWidget( QtGui.QLabel("Availabe tags (double-click to install)", parent ) , stretch=0 )
 		leftLayout.addWidget( self.availableWidget, stretch=1 )
 		rightLayout = QtGui.QVBoxLayout(self)
-		rightLayout.addWidget( QtGui.QLabel("Installed tags", parent ) , stretch=0 )
+		rightLayout.addWidget( QtGui.QLabel("Installed tags (double-click to uninstall)", parent ) , stretch=0 )
 		rightLayout.addWidget( self.installedWidget, stretch=1 )
 		mainLayout.addLayout( leftLayout )
 		mainLayout.addLayout( rightLayout )
