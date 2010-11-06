@@ -19,7 +19,7 @@ import sys, os, time, traceback
 
 baseScript = '''
 import os, ctypes
-from ctypes import c_bool, c_char, c_char_p, c_int, c_uint, c_float, Structure, create_string_buffer, cast, pointer
+from ctypes import c_bool, POINTER, c_ushort, c_char, c_char_p, c_int, c_uint, c_float, Structure, create_string_buffer, cast, pointer
 
 class StartPos(Structure):
 	_fields_ = [('x', c_int), ('y', c_int)]
@@ -98,8 +98,9 @@ typeMap = {
 	'unsigned int': 'c_uint',
 	'float':		'c_float',
 	'bool':			'c_bool',
-	'void*':		'c_char_p', # not sure how to handle the void pointer to minimap
+	'void*':		'c_char_p', 
 	'void':			'', # makes the generated code return (self.unitsync.etc), which doesn't cast it as anything :)
+	'unsigned short*': 'POINTER(c_ushort)'# used by minimap
 }
 
 def quickParse(data):
