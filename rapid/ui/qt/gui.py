@@ -74,7 +74,7 @@ class RapidListWidgetBase(QtGui.QWidget):
 		self.proxyView.sortByColumn(0, QtCore.Qt.AscendingOrder)
 		self.proxyView.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
 		self.filterEdit = QtGui.QLineEdit(self.parent)
-		filterLabel = QtGui.QLabel( "Filter:",self.parent ) 
+		filterLabel = QtGui.QLabel( "Filter (Name):",self.parent ) 
 		filterLayout = QtGui.QHBoxLayout()
 		filterLayout.addWidget( filterLabel,stretch=0 )
 		filterLayout.addWidget( self.filterEdit,stretch=1 )
