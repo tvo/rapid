@@ -571,6 +571,26 @@ class Package(object):
 		    imply the pool files are all available too."""
 		return hasattr(self, 'cache_file') and os.path.exists(self.cache_file)
 
+	@property
+	def installable(self):
+		""" Attempt to make a good guess at whether this package is installable.
+			Contrary to can_be_installed this may return True if dependencies
+			are not (yet) available. It checks that the package itself and all
+			its dependencies are either installed already or can be downloaded
+			from a repository.
+
+			If this returns True, it is guaranteed no other method of this
+			package or its dependencies raise an OfflineRepositoryException or
+			a DetachedPackageException.
+
+			Note that (obviously) there may still be other problems when
+			actually installing the package. (e.g. network/server down)"""
+		for dep in self.dependencies:
+			if not dep.installable:
+				return False
+		return ((self.available and self.missing_files == []) or
+				(self.repository and hasattr(self.repository, 'url')))
+
 ################################################################################
 
 class File(object):

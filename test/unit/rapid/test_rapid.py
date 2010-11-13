@@ -131,6 +131,7 @@ class TestRapid(unittest.TestCase):
 		self.assertFalse(p.repository)
 		self.assertFalse(hasattr(p, 'cache_file'))
 		self.assertFalse(p.available)
+		self.assertFalse(p.installable)
 		self.assertRaises(DetachedPackageException, lambda: p.files)
 		self.assertRaises(DetachedPackageException, lambda: p.install())
 
@@ -142,23 +143,45 @@ class TestRapid(unittest.TestCase):
 		self.assertTrue(p.repository)
 		self.assertTrue(hasattr(p, 'cache_file'))
 		self.assertTrue(p.available)
+		self.assertTrue(p.installable)
 		p.files
 
 	def test_disappeared_repo_sdp_cached(self):
 		self.rapid.packages['xta:latest'].files
 		self.setUp()   # re-initialise
 		self.downloader.www[master_url] = gzip_string('')
-		self.rapid.packages['xta:latest'].files
+		p = self.rapid.packages['xta:latest']
+		p.files
 
 	def test_disappeared_repo_sdp_not_cached(self):
 		self.rapid.packages.load()
 		self.setUp()   # re-initialise
 		self.downloader.www[master_url] = gzip_string('')
 		p = self.rapid.packages['xta:latest']
+		self.assertFalse(p.installable)
 		self.assertRaises(OfflineRepositoryException, lambda: p.files)
 
 	def test_issue_9_duplicate_package_name(self):
 		self.assertEqual('5678', self.rapid.packages['dependency'].hex)
+
+	def test_installable(self):
+		p = self.rapid.packages['xta:latest']
+		self.assertTrue(p.installable)
+
+	def test_installable_if_installed(self):
+		p = self.rapid.packages['dependency']
+		p.install()
+		self.assertTrue(p.installable)
+
+	def test_installable_all_cached(self):
+		p = self.rapid.packages['dependency']
+		p.install()
+		p.uninstall()
+		self.setUp()   # re-initialise
+		self.downloader.www[master_url] = gzip_string('')
+		p = self.rapid.packages['dependency']
+		self.assertTrue(p.installable)
+
 
 if __name__ == '__main__':
 	unittest.main()
