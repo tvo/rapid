@@ -45,6 +45,9 @@ def main():
 	logging.basicConfig(level = logging.INFO, stream = sys.stdout, format = '%(message)s')
 	parser = OptionParser(usage=USAGE)
 
+	parser.add_option('-v', '--version',
+		action='store_true', dest='version',
+		help='Show version information and exit.')
 	parser.add_option('--datadir',
 		action='store', dest='datadir',
 		help='Override the default data directory. '
@@ -86,6 +89,16 @@ def main():
 		if len(args) >= 1:
 			return args.pop(0)
 		return ''
+
+	if options.version:
+		# Only the left side is expanded by git-archive, so when the left side
+		# and the right side differ we are running a real release.
+		if '$Format:%h%d$'[1:-1] == 'Format:%h%d':
+			print 'No version information available.',
+			print 'Are you using a development version?'
+		else:
+			print 'Exported from git commit: $Format:%h%d$'
+		sys.exit(0)
 
 	if len(args) < 1:
 		usage()
