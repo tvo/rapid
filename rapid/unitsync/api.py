@@ -41,6 +41,7 @@ def generate_windows_search_paths():
 		# check in folder in which rapid.exe lives and its parent
 		path = os.path.dirname(os.path.abspath(sys.argv[0]))
 		yield path
+		yield os.path.normpath(os.path.join(path, '..'))
 
 def generate_paths():
 	"""Yield candidate unitsync paths for the current operating system."""
