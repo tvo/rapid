@@ -1,3 +1,4 @@
+v0.5.1, 2010-12-13 -- -v/--version option, changed windows unitsync search path
 v0.5.0, 2010-11-07 -- restructure, download rate limiting, filtering and uninstalling in GUI
 v0.4.3, 2010-09-12 -- README update
 v0.4.2, 2010-09-12 -- release script test

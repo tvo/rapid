@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='rapid-spring',
-    version='0.5.0',
+    version='0.5.1',
     author='Tobi Vollebregt',
     author_email='tobivollebregt@gmail.com',
     packages=['rapid', 'rapid.ui', 'rapid.ui.qt', 'rapid.ui.text', 'rapid.util', 'rapid.unitsync'],
