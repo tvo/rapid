@@ -5,7 +5,7 @@ from rapid.ui.text.interaction import TextUserInteraction
 from optparse import OptionParser
 from rapid.main import init
 from rapid.unitsync.api import get_writable_data_directory
-import os
+import os,threading
 try:
 	from PyQt4 import QtGui
 except:
@@ -14,6 +14,8 @@ except:
 		"Please use your package manager to install PyQt4 and then run rapid-gui again.'")
 	sys.exit(1)
 
+def reloadAction(window):
+	window.mainWidget.reloadModels.emit()
 
 def main():
 	""" PyQt4 GUI entry point."""
@@ -51,4 +53,8 @@ def main():
 	app = QtGui.QApplication(['RapidGUI'])
 	window = RapidGUI()
 	window.show()
+	#poor man's threaded loading..
+	t = threading.Timer( 1, reloadAction, [window] )
+	t.start()
 	app.exec_()
+	
