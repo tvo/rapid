@@ -21,7 +21,7 @@ def generate_linux_search_paths():
 	ld_library_path = os.getenv('LD_LIBRARY_PATH')
 	if ld_library_path:
 		for path in ld_library_path.split(':'):
-			yield ld_library_path
+			yield path
 
 	for prefix in ['/usr/local', '/usr/local/games', '/usr', '/usr/games']:
 		yield os.path.join(prefix, 'lib/spring')
