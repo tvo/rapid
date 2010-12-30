@@ -12,6 +12,20 @@ def split_on_condition(seq, condition):
 		(a if condition(item) else b).append(item)
 	return a,b
 
+class ReloadThread(QtCore.QThread):
+
+	def __init__(self, mainWidget, parent = None):
+		QtCore.QThread.__init__(self, parent)
+		self.mainWidget = mainWidget
+
+	def stop(self):
+		self.wait() # waits until run stops on his own
+
+	def run(self):
+		installed,available = split_on_condition( main.rapid.packages, lambda p: p.installed )
+		self.mainWidget.reload( installed,available )
+		self.stop()
+
 class DownloadDialog(QtGui.QProgressDialog):
 	def __init__(self,parent,tag):
 		super(DownloadDialog, self).__init__('Downloading %s'%tag, QtCore.QString(), 0, 100, parent )
@@ -144,7 +158,6 @@ class AvailableRapidListWidget(RapidListWidgetBase):
 		self.connect( self.dl.dt, QtCore.SIGNAL("downloadComplete"), self.parent.reload, QtCore.Qt.QueuedConnection )
 
 class MainRapidWidget(QtGui.QWidget):
-	reloadModels = QtCore.pyqtSignal()
 	
 	def __init__(self,parent):
 		super(MainRapidWidget, self).__init__(parent)
@@ -164,12 +177,10 @@ class MainRapidWidget(QtGui.QWidget):
 		mainLayout.addLayout( rightLayout )
 		self.setLayout( mainLayout )
 		self.setMinimumSize(1034,768)
-		self.reloadModels.connect(self.reload)
 
-	def reload(self):
+	def reload(self,installed,available):
 		self.leftLabel.setText( "reloading..." )
 		self.rightLabel.setText( "reloading..." )
-		installed,available = split_on_condition( main.rapid.packages, lambda p: p.installed )
 		self.availableWidget.sourceModel.loadData( available )
 		self.installedWidget.sourceModel.loadData( installed )
 		self.leftLabel.setText("Availabe tags (double-click to install)")
@@ -180,4 +191,5 @@ class RapidGUI(QtGui.QMainWindow):
 		QtGui.QMainWindow.__init__(self)
 		self.mainWidget = MainRapidWidget(self)
 		self.setCentralWidget(self.mainWidget)
-		self.mainWidget.reloadModels.emit()
+		self.reloadThread = ReloadThread( self.mainWidget )
+		self.reloadThread.start()
