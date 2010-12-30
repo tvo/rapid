@@ -4,6 +4,8 @@ import os, sys
 from rapid import main
 import models
 from PyQt4 import QtCore, QtGui
+from rapid.ui.text.interaction import TextUserInteraction
+from rapid.unitsync.api import get_writable_data_directory
 
 def split_on_condition(seq, condition):
 	#see http://stackoverflow.com/questions/949098/python-split-a-list-based-on-a-condition
@@ -14,14 +16,25 @@ def split_on_condition(seq, condition):
 
 class ReloadThread(QtCore.QThread):
 
-	def __init__(self, mainWidget, parent = None):
+	def __init__(self, mainWidget,options, parent = None):
 		QtCore.QThread.__init__(self, parent)
 		self.mainWidget = mainWidget
+		self.options = options
 
 	def stop(self):
 		self.wait() # waits until run stops on his own
 
 	def run(self):
+		ui = TextUserInteraction()
+		if self.options.datadir:
+			main.init(options.datadir, ui)
+		elif self.options.unitsync:
+			main.init(get_writable_data_directory(), ui)
+		elif os.name == 'posix':
+			main.init(os.path.expanduser('~/.spring'), ui)
+		else:
+			print 'No data directory specified. Specify one using either --datadir or --unitsync.'
+			print
 		installed,available = split_on_condition( main.rapid.packages, lambda p: p.installed )
 		self.mainWidget.reload( installed,available )
 		self.stop()
@@ -187,9 +200,9 @@ class MainRapidWidget(QtGui.QWidget):
 		self.rightLabel.setText("Installed tags (double-click to uninstall)")
 
 class RapidGUI(QtGui.QMainWindow):
-	def __init__(self):
+	def __init__(self,options):
 		QtGui.QMainWindow.__init__(self)
 		self.mainWidget = MainRapidWidget(self)
 		self.setCentralWidget(self.mainWidget)
-		self.reloadThread = ReloadThread( self.mainWidget )
+		self.reloadThread = ReloadThread( self.mainWidget,options )
 		self.reloadThread.start()

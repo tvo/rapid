@@ -1,11 +1,9 @@
 # Author: Tobi Vollebregt
 
 from .gui import RapidGUI
-from rapid.ui.text.interaction import TextUserInteraction
 from optparse import OptionParser
-from rapid.main import init
-from rapid.unitsync.api import get_writable_data_directory
-import os,threading,sys
+import os,sys
+
 try:
 	from PyQt4 import QtGui
 except:
@@ -13,9 +11,6 @@ except:
 	os.system("xmessage 'This application requires PyQt4 to be installed.\n" +
 		"Please use your package manager to install PyQt4 and then run rapid-gui again.'")
 	sys.exit(1)
-
-def reloadAction(window):
-	window.mainWidget.reloadModels.emit()
 
 def main():
 	""" PyQt4 GUI entry point."""
@@ -38,20 +33,11 @@ def main():
 
 	# TODO: QtUserInteraction should be written and used here.
 	# (+ some more refactors to allow a graphical progress bar too.)
-	ui = TextUserInteraction()
+	#ui = TextUserInteraction()
 
-	if options.datadir:
-		init(options.datadir, ui)
-	elif options.unitsync:
-		init(get_writable_data_directory(), ui)
-	elif os.name == 'posix':
-		init(os.path.expanduser('~/.spring'), ui)
-	else:
-		print 'No data directory specified. Specify one using either --datadir or --unitsync.'
-		print
 
 	app = QtGui.QApplication(['RapidGUI'])
-	window = RapidGUI()
+	window = RapidGUI(options)
 	window.show()
 	sys.exit(app.exec_())
 	
