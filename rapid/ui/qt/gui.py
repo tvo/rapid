@@ -5,6 +5,13 @@ from rapid import main
 import models
 from PyQt4 import QtCore, QtGui
 
+def split_on_condition(seq, condition):
+	#see http://stackoverflow.com/questions/949098/python-split-a-list-based-on-a-condition
+	a, b = [], []
+	for item in seq:
+		(a if condition(item) else b).append(item)
+	return a,b
+
 class DownloadDialog(QtGui.QProgressDialog):
 	def __init__(self,parent,tag):
 		super(DownloadDialog, self).__init__('Downloading %s'%tag, QtCore.QString(), 0, 100, parent )
@@ -162,8 +169,9 @@ class MainRapidWidget(QtGui.QWidget):
 	def reload(self):
 		self.leftLabel.setText( "reloading..." )
 		self.rightLabel.setText( "reloading..." )
-		self.availableWidget.sourceModel.reload()
-		self.installedWidget.sourceModel.reload()
+		installed,available = split_on_condition( main.rapid.packages, lambda p: p.installed )
+		self.availableWidget.sourceModel.loadData( available )
+		self.installedWidget.sourceModel.loadData( installed )
 		self.leftLabel.setText("Availabe tags (double-click to install)")
 		self.rightLabel.setText("Installed tags (double-click to uninstall)")
 
@@ -172,3 +180,4 @@ class RapidGUI(QtGui.QMainWindow):
 		QtGui.QMainWindow.__init__(self)
 		self.mainWidget = MainRapidWidget(self)
 		self.setCentralWidget(self.mainWidget)
+		self.mainWidget.reloadModels.emit()

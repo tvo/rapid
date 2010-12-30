@@ -5,7 +5,7 @@ from rapid.ui.text.interaction import TextUserInteraction
 from optparse import OptionParser
 from rapid.main import init
 from rapid.unitsync.api import get_writable_data_directory
-import os,threading
+import os,threading,sys
 try:
 	from PyQt4 import QtGui
 except:
@@ -53,8 +53,5 @@ def main():
 	app = QtGui.QApplication(['RapidGUI'])
 	window = RapidGUI()
 	window.show()
-	#poor man's threaded loading..
-	t = threading.Timer( 1, reloadAction, [window] )
-	t.start()
-	app.exec_()
+	sys.exit(app.exec_())
 	

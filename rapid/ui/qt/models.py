@@ -8,13 +8,16 @@ class BaseRapidModel(QtGui.QStandardItemModel):
 		super(BaseRapidModel,self).__init__(parent)
 
 	def reloadData(self, dataFunction):
+		self.loadData( filter( dataFunction, main.rapid.packages ) )
+
+	def loadData(self, package_list):
 		self.clear()
 		self.setColumnCount(2)
 		self.setRowCount(0)
 		self.setHeaderData(0, QtCore.Qt.Horizontal, "Name")
 		self.setHeaderData(1, QtCore.Qt.Horizontal, "Tags")
 		i = 0
-		for p in filter( dataFunction, main.rapid.packages ):
+		for p in package_list:
 			self.insertRow(i)
 			self.setData(self.index(i, 0), p.name)
 			self.setData(self.index(i, 1), ', '.join(p.tags))
