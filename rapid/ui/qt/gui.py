@@ -25,6 +25,8 @@ class ReloadThread(QtCore.QThread):
 		self.wait() # waits until run stops on his own
 
 	def run(self):
+		#progress = QtGui.QProgressDialog( "Loading data", "EUDE", 0, 0 )
+		#progress.show()
 		ui = TextUserInteraction()
 		if self.options.datadir:
 			main.init(options.datadir, ui)
@@ -37,6 +39,7 @@ class ReloadThread(QtCore.QThread):
 			print
 		installed,available = split_on_condition( main.rapid.packages, lambda p: p.installed )
 		self.mainWidget.reload( installed,available )
+		#progress.destroy()
 		self.stop()
 
 class DownloadDialog(QtGui.QProgressDialog):
@@ -189,7 +192,6 @@ class MainRapidWidget(QtGui.QWidget):
 		mainLayout.addLayout( leftLayout )
 		mainLayout.addLayout( rightLayout )
 		self.setLayout( mainLayout )
-		self.setMinimumSize(1034,768)
 
 	def reload(self,installed,available):
 		self.leftLabel.setText( "reloading..." )
@@ -202,7 +204,19 @@ class MainRapidWidget(QtGui.QWidget):
 class RapidGUI(QtGui.QMainWindow):
 	def __init__(self,options):
 		QtGui.QMainWindow.__init__(self)
+		settings = QtCore.QSettings()
+		settings.beginGroup("MainWindow");
+		self.resize(settings.value("size", QtCore.QSize(600, 480)).toSize());
+		self.move(settings.value("pos", QtCore.QPoint(200, 200)).toPoint());
+		settings.endGroup();
 		self.mainWidget = MainRapidWidget(self)
 		self.setCentralWidget(self.mainWidget)
 		self.reloadThread = ReloadThread( self.mainWidget,options )
 		self.reloadThread.start()
+		
+	def closeEvent (self, event):
+		settings = QtCore.QSettings()
+		settings.beginGroup("MainWindow");
+		settings.setValue("size", self.size())
+		settings.setValue("pos", self.pos())
+		settings.endGroup()

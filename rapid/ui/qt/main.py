@@ -37,6 +37,9 @@ def main():
 
 
 	app = QtGui.QApplication(['RapidGUI'])
+	app.setOrganizationName("SpringRTS");
+	app.setOrganizationDomain("SpringRTS.com");
+	app.setApplicationName("rapid-gui");
 	window = RapidGUI(options)
 	window.show()
 	sys.exit(app.exec_())
