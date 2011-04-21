@@ -30,18 +30,27 @@ def generate_linux_search_paths():
 
 def generate_windows_search_paths():
 	"""Yield candidate unitsync paths for Windows systems."""
-	program_files = os.getenv('ProgramFiles')
-	if program_files:
-		yield os.path.join(program_files, 'Spring')
-		yield os.path.join(program_files, 'Games', 'Spring')
-
 	yield os.getcwd()
-
 	if sys.argv[0]:
 		# check in folder in which rapid.exe lives and its parent
 		path = os.path.dirname(os.path.abspath(sys.argv[0]))
 		yield path
 		yield os.path.normpath(os.path.join(path, '..'))
+	try:
+		import _winreg
+		key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, r'Software\Spring')
+		value, type = _winreg.QueryValueEx(key, r'SpringEngineHelper')
+		_winreg.CloseKey(key)
+		if type == _winreg.REG_SZ:
+			yield value
+		else:
+			print 'key of unknown type'
+	except WindowsError as e:
+		print "Registry read error: " + e
+	program_files = os.getenv('ProgramFiles')
+	if program_files:
+		yield os.path.join(program_files, 'Spring')
+		yield os.path.join(program_files, 'Games', 'Spring')
 
 def generate_paths():
 	"""Yield candidate unitsync paths for the current operating system."""
