@@ -46,7 +46,7 @@ def generate_windows_search_paths():
 		else:
 			print 'key of unknown type'
 	except WindowsError as e:
-		print "Registry read error: " + e
+		print "Registry key not found: " + str(e)
 	program_files = os.getenv('ProgramFiles')
 	if program_files:
 		yield os.path.join(program_files, 'Spring')
