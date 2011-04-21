@@ -71,8 +71,13 @@ def generate_locations():
 		raise NotImplemented()
 
 	for path in generate_paths():
-		yield os.path.join(path, 'unitsync') + ext
-		yield os.path.join(path, 'libunitsync') + ext
+		# FIXME: this could generate something like this C:\Spring\unitsync.dll\unitsync.dll
+		# when registry key exists + unitsync.dll doesn't exist
+		if os.path.isfile(path):
+			yield path
+		else:
+			yield os.path.join(path, 'unitsync') + ext
+			yield os.path.join(path, 'libunitsync') + ext
 
 def locate_unitsync():
 	"""Locate and instantiate unitsync, otherwise raise UnitsyncError.
