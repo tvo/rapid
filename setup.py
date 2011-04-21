@@ -10,7 +10,7 @@ setup(
     url='http://pypi.python.org/pypi/rapid-spring/',
     license='LICENSE.txt',
     description='spring content downloading',
-    long_description=open('README.txt').read(),
+    long_description=open('README.markdown').read(),
     # running `setup.py sdist' gives a warning about this, but still
     # install_requires is the only thing that works with pip/easy_install...
     install_requires=['bitarray'],
