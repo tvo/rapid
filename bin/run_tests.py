@@ -19,7 +19,7 @@ def main():
 		args = ['unit2'] + args
 	else:
 		args = ['python', '-m', 'unittest'] + args
-	os.execvpe(args[0], args, {'PYTHONPATH': 'src'})
+	os.execvp(args[0], args)
 
 
 if __name__ == '__main__':
