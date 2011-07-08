@@ -226,7 +226,7 @@ def make_sdd(package, path):
 		return
 	package = rapid.packages[package]
 	if not os.path.exists(os.path.dirname(path)):
-		path = os.path.join(spring_dir, 'mods', path)
+		path = os.path.join(spring_dir, 'games', path)
 	if os.path.exists(path):
 		log.error('%s already exists', path)
 		return
