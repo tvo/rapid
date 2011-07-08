@@ -25,7 +25,7 @@ Where the different verbs and their arguments are:
  * `uninstall-unpinned`: Keep only the pinned tags and all dependencies.
  * `collect-pool`: Remove pool files not needed by any installed package.
  * `make-sdd <tag|package> <dir>`: Extract pool files of a package into
-	`~/.spring/mods/<dir>`.
+	`~/.spring/games/<dir>`.
 
 Examples:
 
