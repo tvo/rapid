@@ -22,7 +22,7 @@ REPOSITORY_RATE_LIMIT = 5 * 60  # ..five minutes
 # pool_dir    : Where pool files are stored (visible to Spring)
 # package_dir : Where package files are stored (visible to Spring)
 
-master_url = 'http://repos.caspring.org/repos.gz'
+master_url = 'http://repos.springrts.com/repos.gz'
 
 def set_spring_dir(path):
 	global spring_dir, pool_dir, package_dir, content_dir
