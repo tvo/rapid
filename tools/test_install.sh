@@ -4,6 +4,9 @@
 # Tests whether dependencies are installed properly when rapid is installed
 # through pip and easy_install.
 
+# /tmp may be noexec, so use current dir
+export TMPDIR=$PWD
+
 function indent {
 	$@ 2>&1 | sed 's/^/	/g'
 }
@@ -21,7 +24,7 @@ function setup {
 	echo "setting up virtualenv"
 	DIR=`mktemp -d`
 	trap "rm -rf $DIR" EXIT
-	indent virtualenv --clear --no-site-packages $DIR
+	indent virtualenv --clear $DIR
 	cd $DIR
 	. bin/activate
 }
@@ -30,6 +33,7 @@ function teardown {
 	echo "cleaning"
 	cd $OLDPWD
 	deactivate
+	rm -rf $DIR
 }
 
 PACKAGE=${1:-rapid-spring} #==0.4.0
