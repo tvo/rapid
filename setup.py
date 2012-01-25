@@ -14,7 +14,7 @@ if sys.platform == "win32":
 
 setup(
     name='rapid-spring',
-    version='0.5.1',
+    version='0.6.0',
     author='Tobi Vollebregt',
     author_email='tobivollebregt@gmail.com',
     packages=['rapid', 'rapid.ui', 'rapid.ui.qt', 'rapid.ui.text', 'rapid.util', 'rapid.unitsync'],
