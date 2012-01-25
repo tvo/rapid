@@ -486,7 +486,11 @@ class Package(object):
 			raise OfflineRepositoryException()
 
 		# Build HTTP POST data.
-		postdata = gzip_string(bits.tostring())
+		# NOTE: bitarray < 0.4.0 has only tostring()
+		#       bitarray >= 0.4.0 has tobytes() and tostring(), but tostring()
+		#       decodes the bits as 7-bit ascii, so many bytes trigger an error.
+		postdata = bits.tobytes() if hasattr(bits, 'tobytes') else bits.tostring()
+		postdata = gzip_string(postdata)
 
 		# Perform HTTP POST request and download and process the response.
 		url = '%s/streamer.cgi?%s' % (self.repository.url, self.hex)
