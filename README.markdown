@@ -12,6 +12,7 @@ You can use *pip* to get the package from the [Python Package Index](http://pypi
     pip install rapid-spring --upgrade
 
 Note: on some Linux distributions the script is called pip-python instead of just pip.
+The python-devel or python-dev package may be required to install bitarray.
 
 If you do not have the script *pip* available then use your distribution's package manager to install the python-pip (or similar) package.
 
