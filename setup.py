@@ -1,5 +1,12 @@
-from cx_Freeze import setup, Executable
 import sys
+
+try:
+	from cx_Freeze import setup, Executable
+except ImportError:
+	from distutils.core import setup
+	# fake, cx_Freeze compatibility
+	def Executable(s, **kwargs):
+		return s
 
 guibase = None
 if sys.platform == "win32":
