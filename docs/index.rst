@@ -13,8 +13,6 @@ Contents:
 
    README.rst
 
-.. automodule:: rapid
-
 Indices and tables
 ==================
 
